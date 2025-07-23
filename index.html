@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whispers of Morocco</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,800&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Muted Pastel Palette */
+            --color-sand-light: #F5EFE6;
+            --color-sand-dark: #E8DFCA;
+            --color-rose-light: #F4E3E3;
+            --color-rose-dark: #E4D0D0;
+            --color-blue-light: #DDE6ED;
+            --color-blue-dark: #C9D6E8;
+            --color-green-light: #E3EFEB;
+            --color-green-dark: #D1E8E2;
+            --color-clay-light: #F0E5DE;
+            --color-clay-dark: #E4D5C9;
+            --color-text: #3D3A3A;
+            --color-text-light: #FFFFFF;
+            --color-accent: #B06B6B;
+
+            /* Transition Speed and Easing */
+            --transition-speed: 0.8s;
+            --transition-ease: cubic-bezier(0.83, 0, 0.17, 1);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-sand-light);
+            color: var(--color-text);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- Main App Container --- */
+        #app-container {
+            height: 100%;
+            width: 100%;
+            position: relative;
+            perspective: 1200px;
+        }
+
+        /* --- Background Surface (The Tadelakt Wall) --- */
+        .background-surface {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            transition: background var(--transition-speed) var(--transition-ease);
+        }
+
+        /* --- Geometric Pattern Overlay --- */
+        .pattern-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M 0 50 L 50 0 L 100 50 L 50 100 Z" fill="none" stroke="%23FFFFFF" stroke-width="0.5" opacity="0.1"/></svg>');
+            animation: pan 120s linear infinite;
+            z-index: 1;
+            opacity: 0.5;
+            transition: opacity 0.5s ease;
+        }
+        
+        #app-container.detail-view-active .pattern-overlay {
+            opacity: 0;
+        }
+
+        @keyframes pan {
+            0% { background-position: 0 0; }
+            100% { background-position: 200px 200px; }
+        }
+
+        /* --- Universal Section Styling --- */
+        .view {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5vw;
+            will-change: transform, opacity;
+            transition: transform var(--transition-speed) var(--transition-ease), 
+                        opacity var(--transition-speed) var(--transition-ease);
+            z-index: 10;
+        }
+
+        /* --- Hero View (The Initial Welcome) --- */
+        #hero-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #hero-view.hidden {
+            opacity: 0;
+            transform: translateY(-50px);
+            pointer-events: none;
+        }
+        
+        #hero-view h1 {
+            font-family: 'Bodoni Moda', serif;
+            font-size: clamp(2rem, 12vw, 8rem);
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--color-text);
+            animation: fadeIn 2s var(--transition-ease) forwards;
+            opacity: 0;
+        }
+
+        #hero-view p {
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-top: 1rem;
+            animation: fadeIn 2s var(--transition-ease) 0.5s forwards;
+            opacity: 0;
+        }
+
+        .explore-button {
+            margin-top: 3rem;
+            background: none;
+            border: 1px solid rgba(61, 58, 58, 0.3);
+            border-radius: 50px;
+            padding: 1rem 2.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            color: var(--color-text);
+            transition: all 0.4s ease;
+            animation: fadeIn 2s var(--transition-ease) 1s forwards;
+            opacity: 0;
+        }
+
+        .explore-button:hover, .explore-button:focus-visible {
+            background: rgba(61, 58, 58, 0.05);
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+            outline: none;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* --- Attractions View (The Impressions) --- */
+        #attractions-view {
+            opacity: 0;
+            transform: translateY(50px);
+            pointer-events: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            height: 100%;
+        }
+
+        #attractions-view.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        .attraction-card {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.4s var(--transition-ease);
+            -webkit-tap-highlight-color: transparent;
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+        }
+        
+        .attraction-card:hover, .attraction-card:focus-visible {
+            transform: scale(1.02);
+            outline: none;
+        }
+        
+        .attraction-card .shape {
+            width: 200px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+            border: 1px solid rgba(255,255,255,0.4);
+            transition: all 0.4s var(--transition-ease);
+        }
+        
+        .attraction-card:hover .shape, .attraction-card:focus-visible .shape {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+            border-color: rgba(255,255,255,0.8);
+        }
+
+        [data-id="majorelle"] .shape { clip-path: polygon(0 0, 100% 20%, 100% 100%, 0 80%); }
+        [data-id="chefchaouen"] .shape { clip-path: circle(50% at 50% 50%); }
+        [data-id="sahara"] .shape { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+        [data-id="aitbenhaddou"] .shape { clip-path: polygon(0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%, 100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%); }
+
+
+        .attraction-card h2 {
+            position: absolute;
+            font-family: 'Bodoni Moda', serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--color-text-light);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            text-align: center;
+            transition: all 0.4s var(--transition-ease);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            pointer-events: none; /* Allows clicks to pass through to the parent button */
+        }
+
+        .attraction-card:hover h2, .attraction-card:focus-visible h2 {
+            transform: scale(1.1);
+        }
+        
+        /* --- Detail View (The Full Immersion) --- */
+        #detail-view {
+            opacity: 0;
+            transform: translateZ(-200px);
+            pointer-events: none;
+            text-align: left;
+            align-items: flex-start;
+            justify-content: flex-end;
+            padding: 8vw;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.7));
+            z-index: 20;
+        }
+        
+        #detail-view.visible {
+            opacity: 1;
+            transform: translateZ(0);
+            pointer-events: auto;
+        }
+
+        #detail-view .content-wrapper {
+            max-width: 600px;
+            color: var(--color-text-light);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 1.2s var(--transition-ease) 0.4s, 
+                        opacity 1.2s var(--transition-ease) 0.4s;
+        }
+
+        #detail-view.visible .content-wrapper {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #detail-view h2 {
+            font-family: 'Bodoni Moda', serif;
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            text-shadow: 0 5px 30px rgba(0,0,0,0.5);
+        }
+        
+        #detail-view p {
+            font-size: clamp(1rem, 1.5vw, 1.1rem);
+            line-height: 1.8;
+            margin-top: 1.5rem;
+            font-weight: 300;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.7);
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 5vw;
+            right: 5vw;
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.4s ease;
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        #detail-view.visible .close-button {
+            transform: scale(1);
+            opacity: 1;
+            transition-delay: 0.8s;
+        }
+
+        /* FIX: Increased specificity to remove !important */
+        .close-button:hover, .close-button:focus-visible {
+            transform: scale(1.1) rotate(90deg);
+            background: rgba(255,255,255,0.2);
+            outline: none;
+        }
+        
+        .close-button::before,
+        .close-button::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 1px;
+            background-color: var(--color-text-light);
+        }
+        
+        .close-button::before { transform: rotate(45deg); }
+        .close-button::after { transform: rotate(-45deg); }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <div id="background" class="background-surface"></div>
+        <div class="pattern-overlay"></div>
+
+        <section id="hero-view" class="view">
+            <h1>Morocco</h1>
+            <p>Whispers on the Wind</p>
+            <button class="explore-button">Explore</button>
+        </section>
+
+        <section id="attractions-view" class="view">
+            <!-- FIX: Changed div to button for accessibility -->
+            <button class="attraction-card" data-id="majorelle">
+                <div class="shape"></div>
+                <h2>Jardin Majorelle</h2>
+            </button>
+            <button class="attraction-card" data-id="chefchaouen">
+                <div class="shape"></div>
+                <h2>Chefchaouen</h2>
+            </button>
+            <button class="attraction-card" data-id="sahara">
+                <div class="shape"></div>
+                <h2>The Sahara</h2>
+            </button>
+            <button class="attraction-card" data-id="aitbenhaddou">
+                <div class="shape"></div>
+                <h2>Aït Benhaddou</h2>
+            </button>
+        </section>
+
+        <section id="detail-view" class="view">
+             <!-- FIX: Changed div to button for accessibility -->
+            <button class="close-button" aria-label="Close details view"></button>
+            <div class="content-wrapper">
+                <h2 id="detail-title"></h2>
+                <p id="detail-description"></p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        const attractionsData = {
+            majorelle: {
+                title: "Jardin Majorelle",
+                description: "A cobalt dream in the heart of Marrakech. Here, intense blue architecture stands in quiet rebellion against the greens of a thousand exotic plants. It is a sanctuary of color and calm.",
+                gradient: "linear-gradient(145deg, var(--color-green-dark), var(--color-blue-dark))",
+            },
+            chefchaouen: {
+                title: "Chefchaouen",
+                description: "The Blue Pearl, nestled in the Rif Mountains. Every wall, door, and pathway is washed in a symphony of blues, a city that feels like walking through a fragment of the sky.",
+                gradient: "linear-gradient(145deg, var(--color-blue-light), var(--color-blue-dark))",
+            },
+            sahara: {
+                title: "The Sahara",
+                description: "An ocean of sand where dunes rise and fall like silent breaths. The world is reduced to light, shadow, and the profound silence of infinity. Time itself seems to pause here.",
+                gradient: "linear-gradient(145deg, var(--color-sand-light), var(--color-rose-dark))",
+            },
+            aitbenhaddou: {
+                title: "Aït Benhaddou",
+                description: "A fortress city carved from the earth itself. The ancient pisé walls hold centuries of stories, glowing amber under the African sun. A testament to human ingenuity against the vast landscape.",
+                gradient: "linear-gradient(145deg, var(--color-clay-light), var(--color-accent))",
+            }
+        };
+
+        // --- Architected State Management and Event Handling ---
+        
+        // DOM Elements
+        const appContainer = document.getElementById('app-container');
+        const background = document.getElementById('background');
+        const heroView = document.getElementById('hero-view');
+        const attractionsView = document.getElementById('attractions-view');
+        const detailView = document.getElementById('detail-view');
+        const exploreButton = document.querySelector('.explore-button');
+        const attractionCards = document.querySelectorAll('.attraction-card');
+        const closeButton = document.querySelector('.close-button');
+        const detailTitle = document.getElementById('detail-title');
+        const detailDescription = document.getElementById('detail-description');
+
+        // State Machine
+        let isTransitioning = false;
+        const initialGradient = "linear-gradient(145deg, var(--color-sand-light), var(--color-rose-light))";
+        background.style.background = initialGradient;
+
+        function handleExploreClick() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            heroView.classList.add('hidden');
+            attractionsView.classList.add('visible');
+
+            // Listen for the transition to end on the attractions view
+            attractionsView.addEventListener('transitionend', () => {
+                isTransitioning = false;
+            }, { once: true });
+        }
+
+        function handleAttractionClick(event) {
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            // Use currentTarget to ensure we get the button, even if an inner element is clicked
+            const card = event.currentTarget; 
+            const id = card.dataset.id;
+            const data = attractionsData[id];
+
+            // Populate detail view
+            detailTitle.textContent = data.title;
+            detailDescription.textContent = data.description;
+            background.style.background = data.gradient;
+            
+            appContainer.classList.add('detail-view-active');
+            attractionsView.classList.remove('visible');
+
+            // Wait for the attractions grid to fade out before showing the detail view
+            attractionsView.addEventListener('transitionend', (e) => {
+                if(e.propertyName === 'opacity') {
+                    detailView.classList.add('visible');
+                    // Focus the close button for accessibility
+                    closeButton.focus(); 
+                }
+            }, { once: true });
+
+            detailView.addEventListener('transitionend', (e) => {
+                if(e.propertyName === 'opacity') {
+                    isTransitioning = false;
+                }
+            }, { once: true });
+        }
+
+        function handleCloseClick() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            appContainer.classList.remove('detail-view-active');
+            detailView.classList.remove('visible');
+
+            // Listen for the detail view to fully transition out
+            detailView.addEventListener('transitionend', (e) => {
+                if (e.propertyName === 'opacity') {
+                    background.style.background = initialGradient;
+                    attractionsView.classList.add('visible');
+
+                    // Focus the first attraction card when returning
+                    if(attractionCards.length > 0) {
+                        attractionCards[0].focus();
+                    }
+
+                    // Reset the transitioning flag only after the final animation
+                    attractionsView.addEventListener('transitionend', (e) => {
+                         if (e.propertyName === 'opacity') {
+                            isTransitioning = false;
+                         }
+                    }, { once: true });
+                }
+            }, { once: true });
+        }
+        
+        // Event Listeners
+        exploreButton.addEventListener('click', handleExploreClick);
+        attractionCards.forEach(card => card.addEventListener('click', handleAttractionClick));
+        closeButton.addEventListener('click', handleCloseClick);
+
+    </script>
+</body>
+</html>
