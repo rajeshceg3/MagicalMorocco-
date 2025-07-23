@@ -9,20 +9,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,800&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Muted Pastel Palette */
-            --color-sand-light: #F5EFE6;
-            --color-sand-dark: #E8DFCA;
-            --color-rose-light: #F4E3E3;
-            --color-rose-dark: #E4D0D0;
-            --color-blue-light: #DDE6ED;
-            --color-blue-dark: #C9D6E8;
-            --color-green-light: #E3EFEB;
-            --color-green-dark: #D1E8E2;
-            --color-clay-light: #F0E5DE;
-            --color-clay-dark: #E4D5C9;
-            --color-text: #3D3A3A;
-            --color-text-light: #FFFFFF;
-            --color-accent: #B06B6B;
+            /* High-Contrast, Themed Palette */
+            --color-bg-main: #1A1A1A;
+            --color-text-primary: #FFFFFF;
+            --color-text-secondary: #B3B3B3;
+            --color-accent: #FF5A5F;
+            --color-accent-dark: #D9363B;
+
+            /* Location-Specific Themes */
+            --theme-majorelle-bg: #005A9C;
+            --theme-majorelle-text: #F7B538;
+            --theme-chefchaouen-bg: #0E7C86;
+            --theme-chefchaouen-text: #FFFFFF;
+            --theme-sahara-bg: #EAAA49;
+            --theme-sahara-text: #3D2B1F;
+            --theme-aitbenhaddou-bg: #8B4513;
+            --theme-aitbenhaddou-text: #F0E68C;
 
             /* Transition Speed and Easing */
             --transition-speed: 0.8s;
@@ -37,8 +39,8 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--color-sand-light);
-            color: var(--color-text);
+            background-color: var(--color-bg-main);
+            color: var(--color-text-primary);
             overflow: hidden;
             height: 100vh;
             width: 100vw;
@@ -113,7 +115,7 @@
             font-weight: 800;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: var(--color-text);
+            color: var(--color-text-primary);
             animation: fadeIn 2s var(--transition-ease) forwards;
             opacity: 0;
         }
@@ -129,8 +131,8 @@
 
         .explore-button {
             margin-top: 3rem;
-            background: none;
-            border: 1px solid rgba(61, 58, 58, 0.3);
+            background: var(--color-accent);
+            border: none;
             border-radius: 50px;
             padding: 1rem 2.5rem;
             font-family: 'Inter', sans-serif;
@@ -138,16 +140,16 @@
             letter-spacing: 0.2em;
             text-transform: uppercase;
             cursor: pointer;
-            color: var(--color-text);
+            color: var(--color-text-primary);
             transition: all 0.4s ease;
             animation: fadeIn 2s var(--transition-ease) 1s forwards;
             opacity: 0;
         }
 
         .explore-button:hover, .explore-button:focus-visible {
-            background: rgba(61, 58, 58, 0.05);
+            background: var(--color-accent-dark);
             transform: scale(1.05);
-            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
             outline: none;
         }
 
@@ -187,9 +189,13 @@
             font-family: inherit;
         }
         
-        .attraction-card:hover, .attraction-card:focus-visible {
+        .attraction-card:hover, .attraction-card:focus {
             transform: scale(1.02);
             outline: none;
+        }
+
+        .attraction-card:focus .shape {
+            box-shadow: 0 0 0 3px var(--color-accent);
         }
         
         .attraction-card .shape {
@@ -209,10 +215,6 @@
             border-color: rgba(255,255,255,0.8);
         }
 
-        [data-id="majorelle"] .shape { clip-path: polygon(0 0, 100% 20%, 100% 100%, 0 80%); }
-        [data-id="chefchaouen"] .shape { clip-path: circle(50% at 50% 50%); }
-        [data-id="sahara"] .shape { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
-        [data-id="aitbenhaddou"] .shape { clip-path: polygon(0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%, 100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%); }
 
 
         .attraction-card h2 {
@@ -220,8 +222,8 @@
             font-family: 'Bodoni Moda', serif;
             font-size: 1.5rem;
             font-weight: 800;
-            color: var(--color-text-light);
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            color: var(--color-text-primary);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
             text-align: center;
             transition: all 0.4s var(--transition-ease);
             letter-spacing: 0.1em;
@@ -254,7 +256,7 @@
 
         #detail-view .content-wrapper {
             max-width: 600px;
-            color: var(--color-text-light);
+            color: var(--color-text-primary);
             transform: translateY(100px);
             opacity: 0;
             transition: transform 1.2s var(--transition-ease) 0.4s, 
@@ -323,7 +325,7 @@
             position: absolute;
             width: 20px;
             height: 1px;
-            background-color: var(--color-text-light);
+            background-color: var(--color-text-primary);
         }
         
         .close-button::before { transform: rotate(45deg); }
@@ -344,25 +346,7 @@
             <button class="explore-button">Explore</button>
         </section>
 
-        <section id="attractions-view" class="view">
-            <!-- FIX: Changed div to button for accessibility -->
-            <button class="attraction-card" data-id="majorelle">
-                <div class="shape"></div>
-                <h2>Jardin Majorelle</h2>
-            </button>
-            <button class="attraction-card" data-id="chefchaouen">
-                <div class="shape"></div>
-                <h2>Chefchaouen</h2>
-            </button>
-            <button class="attraction-card" data-id="sahara">
-                <div class="shape"></div>
-                <h2>The Sahara</h2>
-            </button>
-            <button class="attraction-card" data-id="aitbenhaddou">
-                <div class="shape"></div>
-                <h2>Aït Benhaddou</h2>
-            </button>
-        </section>
+        <section id="attractions-view" class="view"></section>
 
         <section id="detail-view" class="view">
              <!-- FIX: Changed div to button for accessibility -->
@@ -380,23 +364,75 @@
             majorelle: {
                 title: "Jardin Majorelle",
                 description: "A cobalt dream in the heart of Marrakech. Here, intense blue architecture stands in quiet rebellion against the greens of a thousand exotic plants. It is a sanctuary of color and calm.",
-                gradient: "linear-gradient(145deg, var(--color-green-dark), var(--color-blue-dark))",
+                gradient: "linear-gradient(145deg, var(--theme-majorelle-bg), var(--theme-majorelle-text))",
+                clipPath: "polygon(0 0, 100% 20%, 100% 100%, 0 80%)",
             },
             chefchaouen: {
                 title: "Chefchaouen",
                 description: "The Blue Pearl, nestled in the Rif Mountains. Every wall, door, and pathway is washed in a symphony of blues, a city that feels like walking through a fragment of the sky.",
-                gradient: "linear-gradient(145deg, var(--color-blue-light), var(--color-blue-dark))",
+                gradient: "linear-gradient(145deg, var(--theme-chefchaouen-bg), var(--theme-chefchaouen-text))",
+                clipPath: "circle(50% at 50% 50%)",
             },
             sahara: {
                 title: "The Sahara",
                 description: "An ocean of sand where dunes rise and fall like silent breaths. The world is reduced to light, shadow, and the profound silence of infinity. Time itself seems to pause here.",
-                gradient: "linear-gradient(145deg, var(--color-sand-light), var(--color-rose-dark))",
+                gradient: "linear-gradient(145deg, var(--theme-sahara-bg), var(--theme-sahara-text))",
+                clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
             },
             aitbenhaddou: {
                 title: "Aït Benhaddou",
                 description: "A fortress city carved from the earth itself. The ancient pisé walls hold centuries of stories, glowing amber under the African sun. A testament to human ingenuity against the vast landscape.",
-                gradient: "linear-gradient(145deg, var(--color-clay-light), var(--color-accent))",
-            }
+                gradient: "linear-gradient(145deg, var(--theme-aitbenhaddou-bg), var(--theme-aitbenhaddou-text))",
+                clipPath: "polygon(0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%, 100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%)",
+            },
+            fes: {
+                title: "Fes el-Bali",
+                description: "The world's largest living medieval city. A labyrinth of 9,000 alleyways where the call to prayer echoes and the scent of spices and leather fills the air. A journey back in time.",
+                gradient: "linear-gradient(145deg, #6B4226, #D2B48C)",
+                clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
+            },
+            essaouira: {
+                title: "Essaouira",
+                description: "A windswept coastal town where the Atlantic meets ancient ramparts. Seagulls cry over the bustling fishing port and the air is fresh with the scent of the ocean.",
+                gradient: "linear-gradient(145deg, #005A9C, #ADD8E6)",
+                clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)",
+            },
+            dades: {
+                title: "Dades Gorges",
+                description: "A dramatic landscape of towering rock formations and winding roads. The 'Monkey Fingers' cliffs and the winding Tizi n'Tichka pass are a testament to nature's artistry.",
+                gradient: "linear-gradient(145deg, #B22222, #FF7F50)",
+                clipPath: "polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%)",
+            },
+            merzouga: {
+                title: "Merzouga",
+                description: "Gateway to the Erg Chebbi dunes. Here, the Sahara's golden sands stretch as far as the eye can see, offering a spectacle of light and shadow at sunrise and sunset.",
+                gradient: "linear-gradient(145deg, #FFD700, #FFA500)",
+                clipPath: "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)",
+            },
+            casablanca: {
+                title: "Casablanca",
+                description: "Morocco's largest city, a bustling metropolis where modern life and tradition coexist. The magnificent Hassan II Mosque, standing over the Atlantic, is a sight to behold.",
+                gradient: "linear-gradient(145deg, #00008B, #87CEEB)",
+                clipPath: "polygon(0 0, 100% 0, 100% 85%, 0 100%)",
+            },
+            rabat: {
+                title: "Rabat",
+                description: "The capital of Morocco, a city of lush parks and grand boulevards. The ancient Kasbah of the Udayas and the tranquil Chellah necropolis offer a glimpse into its rich history.",
+                gradient: "linear-gradient(145deg, #006400, #90EE90)",
+                clipPath: "polygon(0 15%, 100% 0, 100% 85%, 0 100%)",
+            },
+            tangier: {
+                title: "Tangier",
+                description: "A city at the crossroads of Europe and Africa, a melting pot of cultures. The Caves of Hercules and the vibrant medina have inspired artists and writers for centuries.",
+                gradient: "linear-gradient(145deg, #4169E1, #AFEEEE)",
+                clipPath: "polygon(0 0, 85% 0, 100% 100%, 15% 100%)",
+            },
+            meknes: {
+                title: "Meknes",
+                description: "The 'Versailles of Morocco', an imperial city with a grand vision. The monumental Bab Mansour gate and the vast Heri es-Souani granaries are a testament to its glorious past.",
+                gradient: "linear-gradient(145deg, #800000, #CD5C5C)",
+                clipPath: "polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)",
+            },
         };
 
         // --- Architected State Management and Event Handling ---
@@ -415,7 +451,7 @@
 
         // State Machine
         let isTransitioning = false;
-        const initialGradient = "linear-gradient(145deg, var(--color-sand-light), var(--color-rose-light))";
+        const initialGradient = "linear-gradient(145deg, var(--color-bg-main), var(--color-accent))";
         background.style.background = initialGradient;
 
         function handleExploreClick() {
@@ -449,19 +485,21 @@
             attractionsView.classList.remove('visible');
 
             // Wait for the attractions grid to fade out before showing the detail view
-            attractionsView.addEventListener('transitionend', (e) => {
-                if(e.propertyName === 'opacity') {
-                    detailView.classList.add('visible');
-                    // Focus the close button for accessibility
-                    closeButton.focus(); 
-                }
-            }, { once: true });
+            const transitionPromise = new Promise(resolve => {
+                attractionsView.addEventListener('transitionend', function onTransitionEnd(e) {
+                    if (e.propertyName === 'opacity') {
+                        attractionsView.removeEventListener('transitionend', onTransitionEnd);
+                        resolve();
+                    }
+                });
+            });
 
-            detailView.addEventListener('transitionend', (e) => {
-                if(e.propertyName === 'opacity') {
-                    isTransitioning = false;
-                }
-            }, { once: true });
+            transitionPromise.then(() => {
+                detailView.classList.add('visible');
+                // Focus the close button for accessibility
+                closeButton.focus();
+                isTransitioning = false;
+            });
         }
 
         function handleCloseClick() {
@@ -492,10 +530,32 @@
             }, { once: true });
         }
         
+        // --- Initialization ---
+        function initializeAttractions() {
+            const fragment = document.createDocumentFragment();
+            for (const id in attractionsData) {
+                const attraction = attractionsData[id];
+                const card = document.createElement('button');
+                card.className = 'attraction-card';
+                card.dataset.id = id;
+                card.innerHTML = `
+                    <div class="shape"></div>
+                    <h2>${attraction.title}</h2>
+                `;
+                // Add clip-path from data
+                card.querySelector('.shape').style.clipPath = attraction.clipPath;
+                card.addEventListener('click', handleAttractionClick);
+                fragment.appendChild(card);
+            }
+            attractionsView.appendChild(fragment);
+        }
+
         // Event Listeners
         exploreButton.addEventListener('click', handleExploreClick);
-        attractionCards.forEach(card => card.addEventListener('click', handleAttractionClick));
         closeButton.addEventListener('click', handleCloseClick);
+
+        // Initial setup
+        initializeAttractions();
 
     </script>
 </body>
