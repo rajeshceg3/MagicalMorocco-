@@ -8,23 +8,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,800&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <style>
+        /* --- Base Styles & Variables --- */
         :root {
-            /* High-Contrast, Themed Palette */
-            --color-bg-main: #1A1A1A;
-            --color-text-primary: #FFFFFF;
-            --color-text-secondary: #B3B3B3;
-            --color-accent: #FF5A5F;
-            --color-accent-dark: #D9363B;
+            /* Relaxing Pastel Palette */
+            --color-bg-main: #f4f1de;
+            --color-text-primary: #4a4e69;
+            --color-text-secondary: #9a8c98;
+            --color-accent: #c9ada7;
+            --color-accent-dark: #9a8c98;
 
-            /* Location-Specific Themes */
-            --theme-majorelle-bg: #005A9C;
-            --theme-majorelle-text: #F7B538;
-            --theme-chefchaouen-bg: #0E7C86;
-            --theme-chefchaouen-text: #FFFFFF;
-            --theme-sahara-bg: #EAAA49;
-            --theme-sahara-text: #3D2B1F;
-            --theme-aitbenhaddou-bg: #8B4513;
-            --theme-aitbenhaddou-text: #F0E68C;
+            /* Location-Specific Themes (Pastel Versions) */
+            --theme-majorelle-bg: #8ecae6;
+            --theme-majorelle-text: #219ebc;
+            --theme-chefchaouen-bg: #a2d2ff;
+            --theme-chefchaouen-text: #0077b6;
+            --theme-sahara-bg: #ffb703;
+            --theme-sahara-text: #fb8500;
+            --theme-aitbenhaddou-bg: #e09f3e;
+            --theme-aitbenhaddou-text: #9d4edd;
 
             /* Transition Speed and Easing */
             --transition-speed: 0.8s;
@@ -46,6 +47,8 @@
             width: 100vw;
         }
 
+        /* --- App Container & Background Effects --- */
+
         /* --- Main App Container --- */
         #app-container {
             height: 100%;
@@ -59,18 +62,26 @@
             position: absolute;
             inset: 0;
             z-index: 0;
+            background-size: 400% 400%;
+            animation: gradient-animation 15s ease infinite;
             transition: background var(--transition-speed) var(--transition-ease);
+        }
+
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* --- Geometric Pattern Overlay --- */
         .pattern-overlay {
             position: absolute;
             inset: 0;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M 0 50 L 50 0 L 100 50 L 50 100 Z" fill="none" stroke="%23FFFFFF" stroke-width="0.5" opacity="0.1"/></svg>');
-            animation: pan 120s linear infinite;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M 0 50 L 50 0 L 100 50 L 50 100 Z" fill="none" stroke="%234a4e69" stroke-width="0.3" opacity="0.2"/></svg>');
+            animation: pan 180s linear infinite;
             z-index: 1;
-            opacity: 0.5;
-            transition: opacity 0.5s ease;
+            opacity: 0.8;
+            transition: opacity 0.8s ease;
         }
         
         #app-container.detail-view-active .pattern-overlay {
@@ -79,7 +90,7 @@
 
         @keyframes pan {
             0% { background-position: 0 0; }
-            100% { background-position: 200px 200px; }
+            100% { background-position: 300px 300px; }
         }
 
         /* --- Universal Section Styling --- */
@@ -111,9 +122,9 @@
         
         #hero-view h1 {
             font-family: 'Bodoni Moda', serif;
-            font-size: clamp(2rem, 12vw, 8rem);
-            font-weight: 800;
-            letter-spacing: 0.1em;
+            font-size: clamp(3rem, 15vw, 10rem);
+            font-weight: 900;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
             color: var(--color-text-primary);
             animation: fadeIn 2s var(--transition-ease) forwards;
@@ -121,10 +132,10 @@
         }
 
         #hero-view p {
-            font-size: clamp(0.9rem, 2vw, 1.2rem);
-            letter-spacing: 0.2em;
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            letter-spacing: 0.25em;
             text-transform: uppercase;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
             animation: fadeIn 2s var(--transition-ease) 0.5s forwards;
             opacity: 0;
         }
@@ -148,8 +159,8 @@
 
         .explore-button:hover, .explore-button:focus-visible {
             background: var(--color-accent-dark);
-            transform: scale(1.05);
-            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
             outline: none;
         }
 
@@ -190,29 +201,29 @@
         }
         
         .attraction-card:hover, .attraction-card:focus {
-            transform: scale(1.02);
+            transform: scale(1.05) translateY(-10px);
             outline: none;
         }
 
         .attraction-card:focus .shape {
-            box-shadow: 0 0 0 3px var(--color-accent);
+            box-shadow: 0 0 0 4px var(--color-accent);
         }
         
         .attraction-card .shape {
             width: 200px;
             height: 300px;
-            background: rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
-            border: 1px solid rgba(255,255,255,0.4);
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255,255,255,0.6);
             transition: all 0.4s var(--transition-ease);
         }
         
         .attraction-card:hover .shape, .attraction-card:focus-visible .shape {
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 55px rgba(0, 0, 0, 0.2);
             transform: translateY(-5px);
-            border-color: rgba(255,255,255,0.8);
+            border-color: rgba(255,255,255,1);
         }
 
 
@@ -220,10 +231,10 @@
         .attraction-card h2 {
             position: absolute;
             font-family: 'Bodoni Moda', serif;
-            font-size: 1.5rem;
-            font-weight: 800;
+            font-size: 1.8rem;
+            font-weight: 900;
             color: var(--color-text-primary);
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
             text-align: center;
             transition: all 0.4s var(--transition-ease);
             letter-spacing: 0.1em;
@@ -270,20 +281,20 @@
 
         #detail-view h2 {
             font-family: 'Bodoni Moda', serif;
-            font-size: clamp(2.5rem, 8vw, 6rem);
-            font-weight: 800;
-            line-height: 1;
-            letter-spacing: 0.05em;
+            font-size: clamp(3rem, 10vw, 8rem);
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            text-shadow: 0 5px 30px rgba(0,0,0,0.5);
+            text-shadow: 0 5px 30px rgba(0,0,0,0.3);
         }
         
         #detail-view p {
-            font-size: clamp(1rem, 1.5vw, 1.1rem);
-            line-height: 1.8;
-            margin-top: 1.5rem;
-            font-weight: 300;
-            text-shadow: 0 2px 15px rgba(0,0,0,0.7);
+            font-size: clamp(1.1rem, 1.8vw, 1.3rem);
+            line-height: 1.9;
+            margin-top: 2rem;
+            font-weight: 400;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.5);
         }
         
         .close-button {
@@ -388,49 +399,49 @@
             fes: {
                 title: "Fes el-Bali",
                 description: "The world's largest living medieval city. A labyrinth of 9,000 alleyways where the call to prayer echoes and the scent of spices and leather fills the air. A journey back in time.",
-                gradient: "linear-gradient(145deg, #6B4226, #D2B48C)",
+                gradient: "linear-gradient(145deg, #e0bfa0, #c9ada7)",
                 clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
             },
             essaouira: {
                 title: "Essaouira",
                 description: "A windswept coastal town where the Atlantic meets ancient ramparts. Seagulls cry over the bustling fishing port and the air is fresh with the scent of the ocean.",
-                gradient: "linear-gradient(145deg, #005A9C, #ADD8E6)",
+                gradient: "linear-gradient(145deg, #a2d2ff, #8ecae6)",
                 clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)",
             },
             dades: {
                 title: "Dades Gorges",
                 description: "A dramatic landscape of towering rock formations and winding roads. The 'Monkey Fingers' cliffs and the winding Tizi n'Tichka pass are a testament to nature's artistry.",
-                gradient: "linear-gradient(145deg, #B22222, #FF7F50)",
+                gradient: "linear-gradient(145deg, #ffafcc, #ffc8dd)",
                 clipPath: "polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%)",
             },
             merzouga: {
                 title: "Merzouga",
                 description: "Gateway to the Erg Chebbi dunes. Here, the Sahara's golden sands stretch as far as the eye can see, offering a spectacle of light and shadow at sunrise and sunset.",
-                gradient: "linear-gradient(145deg, #FFD700, #FFA500)",
+                gradient: "linear-gradient(145deg, #ffca3a, #ffb703)",
                 clipPath: "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)",
             },
             casablanca: {
                 title: "Casablanca",
                 description: "Morocco's largest city, a bustling metropolis where modern life and tradition coexist. The magnificent Hassan II Mosque, standing over the Atlantic, is a sight to behold.",
-                gradient: "linear-gradient(145deg, #00008B, #87CEEB)",
+                gradient: "linear-gradient(145deg, #bde0fe, #a2d2ff)",
                 clipPath: "polygon(0 0, 100% 0, 100% 85%, 0 100%)",
             },
             rabat: {
                 title: "Rabat",
                 description: "The capital of Morocco, a city of lush parks and grand boulevards. The ancient Kasbah of the Udayas and the tranquil Chellah necropolis offer a glimpse into its rich history.",
-                gradient: "linear-gradient(145deg, #006400, #90EE90)",
+                gradient: "linear-gradient(145deg, #c1fba4, #90ee90)",
                 clipPath: "polygon(0 15%, 100% 0, 100% 85%, 0 100%)",
             },
             tangier: {
                 title: "Tangier",
                 description: "A city at the crossroads of Europe and Africa, a melting pot of cultures. The Caves of Hercules and the vibrant medina have inspired artists and writers for centuries.",
-                gradient: "linear-gradient(145deg, #4169E1, #AFEEEE)",
+                gradient: "linear-gradient(145deg, #bde0fe, #8ecae6)",
                 clipPath: "polygon(0 0, 85% 0, 100% 100%, 15% 100%)",
             },
             meknes: {
                 title: "Meknes",
                 description: "The 'Versailles of Morocco', an imperial city with a grand vision. The monumental Bab Mansour gate and the vast Heri es-Souani granaries are a testament to its glorious past.",
-                gradient: "linear-gradient(145deg, #800000, #CD5C5C)",
+                gradient: "linear-gradient(145deg, #ffc8dd, #c9ada7)",
                 clipPath: "polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)",
             },
         };
