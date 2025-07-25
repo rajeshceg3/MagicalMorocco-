@@ -14,7 +14,7 @@
             --color-bg-main: #f4f1de;
             --color-text-primary: #4a4e69;
             --color-text-on-dark: #f4f1de; /* For use on dark/gradient backgrounds like the detail view */
-            --color-text-secondary: #7a6c78; /* Increased contrast for secondary text */
+            --color-text-secondary: #5e515c; /* Increased contrast for secondary text */
             --color-accent: #e5d9d7; /* Lightened for accessible button contrast */
             --color-accent-dark: #d4c3c1; /* Darker accent for hover states */
 
@@ -209,8 +209,8 @@
         }
         
         .attraction-card .shape {
-            width: 200px;
-            height: 300px;
+            width: clamp(150px, 40vw, 200px);
+            height: clamp(225px, 60vw, 300px);
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
@@ -461,6 +461,7 @@
 
         // State Machine
         let isTransitioning = false;
+        let lastFocusedElement;
         const initialGradient = "linear-gradient(145deg, var(--color-bg-main), var(--color-accent))";
         background.style.background = initialGradient;
 
@@ -480,17 +481,18 @@
         function handleAttractionClick(event) {
             if (isTransitioning) return;
             isTransitioning = true;
+            lastFocusedElement = document.activeElement;
 
             // Use currentTarget to ensure we get the button, even if an inner element is clicked
-            const card = event.currentTarget; 
+            const card = event.currentTarget;
             const id = card.dataset.id;
             const data = attractionsData[id];
 
             // Populate detail view
-            detailTitle.textContent = data.title;
+            detailTitle.textContent = `${data.title} - ${id.charAt(0).toUpperCase() + id.slice(1)}`;
             detailDescription.textContent = data.description;
             background.style.background = data.gradient;
-            
+
             appContainer.classList.add('detail-view-active');
             attractionsView.classList.remove('visible');
 
@@ -525,16 +527,16 @@
                     background.style.background = initialGradient;
                     attractionsView.classList.add('visible');
 
-                    // Focus the first attraction card when returning
-                    if(attractionCards.length > 0) {
-                        attractionCards[0].focus();
+                    // Focus the last focused element when returning
+                    if (lastFocusedElement) {
+                        lastFocusedElement.focus();
                     }
 
                     // Reset the transitioning flag only after the final animation
                     attractionsView.addEventListener('transitionend', (e) => {
-                         if (e.propertyName === 'opacity') {
+                        if (e.propertyName === 'opacity') {
                             isTransitioning = false;
-                         }
+                        }
                     }, { once: true });
                 }
             }, { once: true });
@@ -543,15 +545,24 @@
         // --- Initialization ---
         function initializeAttractions() {
             const fragment = document.createDocumentFragment();
+            let isFirstCard = true;
             for (const id in attractionsData) {
                 const attraction = attractionsData[id];
                 const card = document.createElement('button');
                 card.className = 'attraction-card';
                 card.dataset.id = id;
+                const locationName = id.charAt(0).toUpperCase() + id.slice(1);
+                card.setAttribute('aria-label', `View details for ${attraction.title} in ${locationName}`);
                 card.innerHTML = `
                     <div class="shape"></div>
-                    <h2>${attraction.title}</h2>
+                    <h2>${attraction.title} - ${locationName}</h2>
                 `;
+                if (isFirstCard) {
+                    card.tabIndex = 0;
+                    isFirstCard = false;
+                } else {
+                    card.tabIndex = -1;
+                }
                 // Add clip-path from data
                 card.querySelector('.shape').style.clipPath = attraction.clipPath;
                 card.addEventListener('click', handleAttractionClick);
@@ -563,6 +574,23 @@
         // Event Listeners
         exploreButton.addEventListener('click', handleExploreClick);
         closeButton.addEventListener('click', handleCloseClick);
+        attractionsView.addEventListener('keydown', (e) => {
+            const cards = document.querySelectorAll('.attraction-card');
+            const activeCardIndex = Array.from(cards).findIndex(card => card.tabIndex === 0);
+            let nextIndex = activeCardIndex;
+
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                nextIndex = (activeCardIndex + 1) % cards.length;
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                nextIndex = (activeCardIndex - 1 + cards.length) % cards.length;
+            }
+
+            cards[activeCardIndex].tabIndex = -1;
+            cards[nextIndex].tabIndex = 0;
+            cards[nextIndex].focus();
+        });
 
         // Initial setup
         initializeAttractions();
