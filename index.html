@@ -576,20 +576,24 @@
         closeButton.addEventListener('click', handleCloseClick);
         attractionsView.addEventListener('keydown', (e) => {
             const cards = document.querySelectorAll('.attraction-card');
-            const activeCardIndex = Array.from(cards).findIndex(card => card.tabIndex === 0);
-            let nextIndex = activeCardIndex;
+const activeCardIndex = Array.from(cards).findIndex(card => card.tabIndex === 0);
+if (activeCardIndex === -1) {
+    return;
+}
 
-            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                e.preventDefault();
-                nextIndex = (activeCardIndex + 1) % cards.length;
-            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                e.preventDefault();
-                nextIndex = (activeCardIndex - 1 + cards.length) % cards.length;
-            }
+let nextIndex = activeCardIndex;
 
-            cards[activeCardIndex].tabIndex = -1;
-            cards[nextIndex].tabIndex = 0;
-            cards[nextIndex].focus();
+if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    nextIndex = (activeCardIndex + 1) % cards.length;
+} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    nextIndex = (activeCardIndex - 1 + cards.length) % cards.length;
+}
+
+cards[activeCardIndex].tabIndex = -1;
+cards[nextIndex].tabIndex = 0;
+cards[nextIndex].focus();
         });
 
         // Initial setup
