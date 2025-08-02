@@ -465,6 +465,37 @@
         const initialGradient = "linear-gradient(145deg, var(--color-bg-main), var(--color-accent))";
         background.style.background = initialGradient;
 
+        /**
+         * A robust function to handle CSS transitions. It sets a fallback timer
+         * to ensure the callback is always executed, even if the 'transitionend'
+         * event doesn't fire.
+         * @param {HTMLElement} element The element to listen on.
+         * @param {number} duration The expected duration of the transition in ms.
+         * @param {function} callback The function to call when the transition ends.
+         */
+        function onTransitionEnd(element, duration, callback) {
+            let executed = false;
+            const timer = setTimeout(done, duration + 50); // 50ms buffer
+
+            function done() {
+                if (executed) return;
+                executed = true;
+                element.removeEventListener('transitionend', onEnd);
+                callback();
+            }
+
+            function onEnd(e) {
+                // Ensure the event is for the element we're watching
+                if (e.target === element) {
+                    clearTimeout(timer);
+                    done();
+                }
+            }
+
+            element.addEventListener('transitionend', onEnd);
+        }
+
+
         function handleExploreClick() {
             if (isTransitioning) return;
             isTransitioning = true;
@@ -472,10 +503,10 @@
             heroView.classList.add('hidden');
             attractionsView.classList.add('visible');
 
-            // Listen for the transition to end on the attractions view
-            attractionsView.addEventListener('transitionend', () => {
+            // Wait for the transition to end on the attractions view
+            onTransitionEnd(attractionsView, 800, () => {
                 isTransitioning = false;
-            }, { once: true });
+            });
         }
 
         function handleAttractionClick(event) {
@@ -489,28 +520,23 @@
             const data = attractionsData[id];
 
             // Populate detail view
-            detailTitle.textContent = `${data.title} - ${id.charAt(0).toUpperCase() + id.slice(1)}`;
-            detailDescription.textContent = data.description;
+            const locationName = id.charAt(0).toUpperCase() + id.slice(1);
+            detailTitle.textContent = locationName;
+            detailDescription.innerHTML = `<strong>${data.title}.</strong> ${data.description}`;
             background.style.background = data.gradient;
 
             appContainer.classList.add('detail-view-active');
             attractionsView.classList.remove('visible');
 
-            // Wait for the attractions grid to fade out before showing the detail view
-            const transitionPromise = new Promise(resolve => {
-                attractionsView.addEventListener('transitionend', function onTransitionEnd(e) {
-                    if (e.propertyName === 'opacity') {
-                        attractionsView.removeEventListener('transitionend', onTransitionEnd);
-                        resolve();
-                    }
-                });
-            });
-
-            transitionPromise.then(() => {
+            // Wait for attractions view to fade out before showing the detail view
+            onTransitionEnd(attractionsView, 800, () => {
                 detailView.classList.add('visible');
-                // Focus the close button for accessibility
-                closeButton.focus();
-                isTransitioning = false;
+
+                // Wait for the detail view to finish its main transition
+                onTransitionEnd(detailView, 800, () => {
+                    closeButton.focus();
+                    isTransitioning = false;
+                });
             });
         }
 
@@ -522,24 +548,20 @@
             detailView.classList.remove('visible');
 
             // Listen for the detail view to fully transition out
-            detailView.addEventListener('transitionend', (e) => {
-                if (e.propertyName === 'opacity') {
-                    background.style.background = initialGradient;
-                    attractionsView.classList.add('visible');
+            onTransitionEnd(detailView, 800, () => {
+                background.style.background = initialGradient;
+                attractionsView.classList.add('visible');
 
-                    // Focus the last focused element when returning
-                    if (lastFocusedElement) {
-                        lastFocusedElement.focus();
-                    }
-
-                    // Reset the transitioning flag only after the final animation
-                    attractionsView.addEventListener('transitionend', (e) => {
-                        if (e.propertyName === 'opacity') {
-                            isTransitioning = false;
-                        }
-                    }, { once: true });
+                // Focus the last focused element when returning
+                if (lastFocusedElement) {
+                    lastFocusedElement.focus();
                 }
-            }, { once: true });
+
+                // Reset the transitioning flag only after the final animation
+                onTransitionEnd(attractionsView, 800, () => {
+                    isTransitioning = false;
+                });
+            });
         }
         
         // --- Initialization ---
@@ -575,25 +597,55 @@
         exploreButton.addEventListener('click', handleExploreClick);
         closeButton.addEventListener('click', handleCloseClick);
         attractionsView.addEventListener('keydown', (e) => {
-            const cards = document.querySelectorAll('.attraction-card');
-const activeCardIndex = Array.from(cards).findIndex(card => card.tabIndex === 0);
-if (activeCardIndex === -1) {
-    return;
-}
+            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                return;
+            }
 
-let nextIndex = activeCardIndex;
+            const cards = Array.from(document.querySelectorAll('.attraction-card'));
+            const activeCardIndex = cards.findIndex(card => card.tabIndex === 0);
+            if (activeCardIndex === -1) return;
 
-if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-    e.preventDefault();
-    nextIndex = (activeCardIndex + 1) % cards.length;
-} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-    e.preventDefault();
-    nextIndex = (activeCardIndex - 1 + cards.length) % cards.length;
-}
+            e.preventDefault();
 
-cards[activeCardIndex].tabIndex = -1;
-cards[nextIndex].tabIndex = 0;
-cards[nextIndex].focus();
+            const getNumColumns = () => {
+                const firstCardTop = cards[0]?.offsetTop;
+                if (typeof firstCardTop === 'undefined') return 1;
+                // Find the index of the first card that is on a new line
+                const firstCardOnSecondRowIndex = cards.findIndex(c => c.offsetTop > firstCardTop);
+                // If all cards are on one line, the number of columns is the number of cards
+                return firstCardOnSecondRowIndex === -1 ? cards.length : firstCardOnSecondRowIndex;
+            };
+
+            const numColumns = getNumColumns();
+            // No need to calculate rows, it can be inferred
+
+            let nextIndex = activeCardIndex;
+
+            switch (e.key) {
+                case 'ArrowRight':
+                    if ((activeCardIndex + 1) < cards.length && (activeCardIndex + 1) % numColumns !== 0) {
+                        nextIndex = activeCardIndex + 1;
+                    }
+                    break;
+                case 'ArrowLeft':
+                    if (activeCardIndex > 0 && activeCardIndex % numColumns !== 0) {
+                        nextIndex = activeCardIndex - 1;
+                    }
+                    break;
+                case 'ArrowDown':
+                    nextIndex = activeCardIndex + numColumns;
+                    break;
+                case 'ArrowUp':
+                    nextIndex = activeCardIndex - numColumns;
+                    break;
+            }
+
+            // Check if the calculated nextIndex is valid
+            if (nextIndex >= 0 && nextIndex < cards.length) {
+                cards[activeCardIndex].tabIndex = -1;
+                cards[nextIndex].tabIndex = 0;
+                cards[nextIndex].focus();
+            }
         });
 
         // Initial setup
