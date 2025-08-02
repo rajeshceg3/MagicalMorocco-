@@ -521,8 +521,8 @@
 
             // Populate detail view
             const locationName = id.charAt(0).toUpperCase() + id.slice(1);
-            detailTitle.textContent = locationName;
-            detailDescription.innerHTML = `<strong>${data.title}.</strong> ${data.description}`;
+            detailTitle.textContent = data.title; // Use the descriptive title
+            detailDescription.innerHTML = `<strong>${locationName}.</strong> ${data.description}`; // Use location as sub-header
             background.style.background = data.gradient;
 
             appContainer.classList.add('detail-view-active');
@@ -574,10 +574,10 @@
                 card.className = 'attraction-card';
                 card.dataset.id = id;
                 const locationName = id.charAt(0).toUpperCase() + id.slice(1);
-                card.setAttribute('aria-label', `View details for ${attraction.title} in ${locationName}`);
+                card.setAttribute('aria-label', `View details for ${attraction.title}`);
                 card.innerHTML = `
                     <div class="shape"></div>
-                    <h2>${attraction.title} - ${locationName}</h2>
+                    <h2>${attraction.title}</h2>
                 `;
                 if (isFirstCard) {
                     card.tabIndex = 0;
@@ -596,59 +596,78 @@
         // Event Listeners
         exploreButton.addEventListener('click', handleExploreClick);
         closeButton.addEventListener('click', handleCloseClick);
+
+        let numColumns = 0; // Cached value
+        let cardRects = []; // Cached card dimensions
+
+        function calculateGrid() {
+            const cards = Array.from(document.querySelectorAll('.attraction-card'));
+            if (cards.length === 0) return;
+
+            cardRects = cards.map(c => c.getBoundingClientRect());
+            const firstCardTop = cardRects[0].top;
+
+            const firstCardOnSecondRowIndex = cardRects.findIndex(rect => rect.top > firstCardTop);
+
+            numColumns = firstCardOnSecondRowIndex === -1 ? cards.length : firstCardOnSecondRowIndex;
+        }
+
+
         attractionsView.addEventListener('keydown', (e) => {
-            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            const key = e.key;
+            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) {
                 return;
             }
 
             const cards = Array.from(document.querySelectorAll('.attraction-card'));
-            const activeCardIndex = cards.findIndex(card => card.tabIndex === 0);
-            if (activeCardIndex === -1) return;
+            if (cards.length === 0) return;
+
+            let activeCardIndex = cards.findIndex(card => card.tabIndex === 0);
+            if (activeCardIndex === -1) {
+                // If no card is active, make the first one active
+                activeCardIndex = 0;
+                cards[0].tabIndex = 0;
+            }
 
             e.preventDefault();
 
-            const getNumColumns = () => {
-                const firstCardTop = cards[0]?.offsetTop;
-                if (typeof firstCardTop === 'undefined') return 1;
-                // Find the index of the first card that is on a new line
-                const firstCardOnSecondRowIndex = cards.findIndex(c => c.offsetTop > firstCardTop);
-                // If all cards are on one line, the number of columns is the number of cards
-                return firstCardOnSecondRowIndex === -1 ? cards.length : firstCardOnSecondRowIndex;
-            };
-
-            const numColumns = getNumColumns();
+            // Recalculate grid on first navigation attempt in case of resize
+            if (numColumns === 0) {
+                calculateGrid();
+            }
 
             let nextIndex = activeCardIndex;
-            let potentialNextIndex;
 
-            switch (e.key) {
+            switch (key) {
+                case 'Home':
+                    nextIndex = 0;
+                    break;
+                case 'End':
+                    nextIndex = cards.length - 1;
+                    break;
                 case 'ArrowRight':
-                    // Move right, but not if at the end of a row or the grid
-                    if ((activeCardIndex + 1) < cards.length && (activeCardIndex + 1) % numColumns !== 0) {
+                    if (activeCardIndex < cards.length - 1) {
                         nextIndex = activeCardIndex + 1;
                     }
                     break;
                 case 'ArrowLeft':
-                    // Move left, but not if at the start of a row
-                    if (activeCardIndex > 0 && activeCardIndex % numColumns !== 0) {
+                    if (activeCardIndex > 0) {
                         nextIndex = activeCardIndex - 1;
                     }
                     break;
                 case 'ArrowDown':
-                    potentialNextIndex = activeCardIndex + numColumns;
-                    if (potentialNextIndex < cards.length) {
-                        nextIndex = potentialNextIndex;
-                    } else if (activeCardIndex < cards.length - 1) {
-                        // If we can't go down but we're not on the last item, jump to the last item.
+                    if (activeCardIndex + numColumns < cards.length) {
+                        nextIndex = activeCardIndex + numColumns;
+                    } else {
+                        // If moving down would go past the end, go to the last item
                         nextIndex = cards.length - 1;
                     }
                     break;
                 case 'ArrowUp':
-                    potentialNextIndex = activeCardIndex - numColumns;
-                    if (potentialNextIndex >= 0) {
-                        nextIndex = potentialNextIndex;
-                    } else if (activeCardIndex > 0) {
-                        // If we can't go up but we're not on the first item, jump to the first item.
+                     if (activeCardIndex - numColumns >= 0) {
+                        nextIndex = activeCardIndex - numColumns;
+                    } else {
+                        // If moving up would go before the start, go to the first item
                         nextIndex = 0;
                     }
                     break;
@@ -659,6 +678,11 @@
                 cards[nextIndex].tabIndex = 0;
                 cards[nextIndex].focus();
             }
+        });
+
+        // Recalculate grid on window resize
+        window.addEventListener('resize', () => {
+            numColumns = 0; // Invalidate cache
         });
 
         // Initial setup
