@@ -617,31 +617,44 @@
             };
 
             const numColumns = getNumColumns();
-            // No need to calculate rows, it can be inferred
 
             let nextIndex = activeCardIndex;
+            let potentialNextIndex;
 
             switch (e.key) {
                 case 'ArrowRight':
+                    // Move right, but not if at the end of a row or the grid
                     if ((activeCardIndex + 1) < cards.length && (activeCardIndex + 1) % numColumns !== 0) {
                         nextIndex = activeCardIndex + 1;
                     }
                     break;
                 case 'ArrowLeft':
+                    // Move left, but not if at the start of a row
                     if (activeCardIndex > 0 && activeCardIndex % numColumns !== 0) {
                         nextIndex = activeCardIndex - 1;
                     }
                     break;
                 case 'ArrowDown':
-                    nextIndex = activeCardIndex + numColumns;
+                    potentialNextIndex = activeCardIndex + numColumns;
+                    if (potentialNextIndex < cards.length) {
+                        nextIndex = potentialNextIndex;
+                    } else if (activeCardIndex < cards.length - 1) {
+                        // If we can't go down but we're not on the last item, jump to the last item.
+                        nextIndex = cards.length - 1;
+                    }
                     break;
                 case 'ArrowUp':
-                    nextIndex = activeCardIndex - numColumns;
+                    potentialNextIndex = activeCardIndex - numColumns;
+                    if (potentialNextIndex >= 0) {
+                        nextIndex = potentialNextIndex;
+                    } else if (activeCardIndex > 0) {
+                        // If we can't go up but we're not on the first item, jump to the first item.
+                        nextIndex = 0;
+                    }
                     break;
             }
 
-            // Check if the calculated nextIndex is valid
-            if (nextIndex >= 0 && nextIndex < cards.length) {
+            if (nextIndex !== activeCardIndex) {
                 cards[activeCardIndex].tabIndex = -1;
                 cards[nextIndex].tabIndex = 0;
                 cards[nextIndex].focus();
