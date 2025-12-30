@@ -597,6 +597,13 @@
         exploreButton.addEventListener('click', handleExploreClick);
         closeButton.addEventListener('click', handleCloseClick);
 
+        // Add Escape key handler for detail view
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && detailView.classList.contains('visible')) {
+                handleCloseClick();
+            }
+        });
+
         let numColumns = 0; // Cached value
         let cardRects = []; // Cached card dimensions
 
