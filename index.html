@@ -102,21 +102,31 @@
             align-items: center;
             padding: 5vw;
             will-change: transform, opacity;
+            visibility: hidden;
             transition: transform var(--transition-speed) var(--transition-ease), 
-                        opacity var(--transition-speed) var(--transition-ease);
+                        opacity var(--transition-speed) var(--transition-ease),
+                        visibility 0s linear var(--transition-speed);
             z-index: 10;
         }
 
         /* --- Hero View (The Initial Welcome) --- */
         #hero-view {
+            visibility: visible;
             opacity: 1;
             transform: translateY(0);
+            transition: transform var(--transition-speed) var(--transition-ease),
+                        opacity var(--transition-speed) var(--transition-ease),
+                        visibility 0s linear 0s;
         }
 
         #hero-view.hidden {
+            visibility: hidden;
             opacity: 0;
             transform: translateY(-50px);
             pointer-events: none;
+            transition: transform var(--transition-speed) var(--transition-ease),
+                        opacity var(--transition-speed) var(--transition-ease),
+                        visibility 0s linear var(--transition-speed);
         }
         
         #hero-view h1 {
@@ -180,9 +190,13 @@
         }
 
         #attractions-view.visible {
+            visibility: visible;
             opacity: 1;
             transform: translateY(0);
             pointer-events: auto;
+            transition: transform var(--transition-speed) var(--transition-ease),
+                        opacity var(--transition-speed) var(--transition-ease),
+                        visibility 0s linear 0s;
         }
         
         .attraction-card {
@@ -259,9 +273,13 @@
         }
         
         #detail-view.visible {
+            visibility: visible;
             opacity: 1;
             transform: translateZ(0);
             pointer-events: auto;
+            transition: transform var(--transition-speed) var(--transition-ease),
+                        opacity var(--transition-speed) var(--transition-ease),
+                        visibility 0s linear 0s;
         }
 
         #detail-view .content-wrapper {
