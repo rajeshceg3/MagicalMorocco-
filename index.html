@@ -359,6 +359,23 @@
         .close-button::before { transform: rotate(45deg); }
         .close-button::after { transform: rotate(-45deg); }
 
+        /* --- Reduced Motion Support --- */
+        @media (prefers-reduced-motion: reduce) {
+            :root {
+                --transition-speed: 0s;
+            }
+            .background-surface, .pattern-overlay {
+                animation: none !important;
+            }
+            #hero-view h1, #hero-view p, .explore-button {
+                animation: none !important;
+                opacity: 1 !important;
+            }
+            .attraction-card:hover, .attraction-card:focus {
+                transform: none !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -483,6 +500,10 @@
         const initialGradient = "linear-gradient(145deg, var(--color-bg-main), var(--color-accent))";
         background.style.background = initialGradient;
 
+        function getTransitionDuration() {
+            return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 800;
+        }
+
         /**
          * A robust function to handle CSS transitions. It sets a fallback timer
          * to ensure the callback is always executed, even if the 'transitionend'
@@ -522,7 +543,7 @@
             attractionsView.classList.add('visible');
 
             // Wait for the transition to end on the attractions view
-            onTransitionEnd(attractionsView, 800, () => {
+            onTransitionEnd(attractionsView, getTransitionDuration(), () => {
                 isTransitioning = false;
             });
         }
@@ -547,11 +568,11 @@
             attractionsView.classList.remove('visible');
 
             // Wait for attractions view to fade out before showing the detail view
-            onTransitionEnd(attractionsView, 800, () => {
+            onTransitionEnd(attractionsView, getTransitionDuration(), () => {
                 detailView.classList.add('visible');
 
                 // Wait for the detail view to finish its main transition
-                onTransitionEnd(detailView, 800, () => {
+                onTransitionEnd(detailView, getTransitionDuration(), () => {
                     closeButton.focus();
                     isTransitioning = false;
                 });
@@ -566,7 +587,7 @@
             detailView.classList.remove('visible');
 
             // Listen for the detail view to fully transition out
-            onTransitionEnd(detailView, 800, () => {
+            onTransitionEnd(detailView, getTransitionDuration(), () => {
                 background.style.background = initialGradient;
                 attractionsView.classList.add('visible');
 
@@ -576,7 +597,7 @@
                 }
 
                 // Reset the transitioning flag only after the final animation
-                onTransitionEnd(attractionsView, 800, () => {
+                onTransitionEnd(attractionsView, getTransitionDuration(), () => {
                     isTransitioning = false;
                 });
             });
