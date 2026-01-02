@@ -545,6 +545,11 @@
             // Wait for the transition to end on the attractions view
             onTransitionEnd(attractionsView, getTransitionDuration(), () => {
                 isTransitioning = false;
+                // Focus the first attraction card to enable immediate keyboard navigation
+                const firstCard = attractionsView.querySelector('.attraction-card[tabindex="0"]');
+                if (firstCard) {
+                    firstCard.focus();
+                }
             });
         }
 
