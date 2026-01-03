@@ -393,7 +393,7 @@
 
         <section id="attractions-view" class="view"></section>
 
-        <section id="detail-view" class="view">
+        <section id="detail-view" class="view" role="dialog" aria-modal="true" aria-labelledby="detail-title" aria-describedby="detail-description">
              <!-- FIX: Changed div to button for accessibility -->
             <button class="close-button" aria-label="Close details view"></button>
             <div class="content-wrapper">
@@ -644,6 +644,13 @@
         // Add Escape key handler for detail view
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && detailView.classList.contains('visible')) {
+                handleCloseClick();
+            }
+        });
+
+        // Add backdrop click to close for detail view
+        detailView.addEventListener('click', (e) => {
+            if (e.target === detailView) {
                 handleCloseClick();
             }
         });
