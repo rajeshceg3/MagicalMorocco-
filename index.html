@@ -170,7 +170,8 @@
             background: var(--color-accent-dark);
             transform: scale(1.05) translateY(-3px);
             box-shadow: 0 5px 25px rgba(0,0,0,0.2);
-            outline: none;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
         }
 
         @keyframes fadeIn {
@@ -215,7 +216,8 @@
         
         .attraction-card:hover, .attraction-card:focus {
             transform: scale(1.02) translateY(-5px);
-            outline: none;
+            outline: 2px solid transparent;
+            outline-offset: 4px;
         }
 
         .attraction-card:focus .shape {
@@ -344,7 +346,8 @@
         .close-button:hover, .close-button:focus-visible {
             transform: scale(1.1) rotate(90deg);
             background: rgba(255,255,255,0.2);
-            outline: none;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
         }
         
         .close-button::before,
