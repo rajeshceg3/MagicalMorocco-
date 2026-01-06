@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Immerse yourself in the colors and stories of Morocco through this interactive photographic journey. Explore the Azure Dream of Majorelle, the Blue Symphony of Chefchaouen, and more.">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="Whispers of Morocco">
+    <meta property="og:description" content="A cinematic journey through the light and colors of Morocco.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&q=80">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Security -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com;">
+
     <title>Whispers of Morocco</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -286,7 +298,7 @@
 
         #detail-view .content-wrapper {
             max-width: 600px;
-            color: var(--color-text-primary);
+            color: var(--color-text-on-dark);
             transform: translateY(100px);
             opacity: 0;
             transition: transform 1.2s var(--transition-ease) 0.4s, 
@@ -356,7 +368,7 @@
             position: absolute;
             width: 20px;
             height: 1px;
-            background-color: var(--color-text-primary);
+            background-color: var(--color-text-on-dark);
         }
         
         .close-button::before { transform: rotate(45deg); }
@@ -379,9 +391,28 @@
             }
         }
 
+        /* --- Skip Link --- */
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 1rem;
+            background: var(--color-bg-main);
+            color: var(--color-text-primary);
+            padding: 1rem;
+            z-index: 100;
+            text-decoration: none;
+            font-weight: bold;
+            transition: top 0.3s ease;
+        }
+
+        .skip-link:focus {
+            top: 1rem;
+        }
+
     </style>
 </head>
 <body>
+    <a href="#attractions-view" class="skip-link" onclick="document.querySelector('.explore-button').click(); return false;">Skip to Content</a>
 
     <div id="app-container">
         
@@ -569,7 +600,14 @@
             // Populate detail view
             const locationName = id.charAt(0).toUpperCase() + id.slice(1);
             detailTitle.textContent = data.title; // Use the descriptive title
-            detailDescription.innerHTML = `<strong>${locationName}.</strong> ${data.description}`; // Use location as sub-header
+
+            // Safe DOM construction instead of innerHTML
+            detailDescription.textContent = '';
+            const strong = document.createElement('strong');
+            strong.textContent = `${locationName}.`;
+            detailDescription.appendChild(strong);
+            detailDescription.appendChild(document.createTextNode(` ${data.description}`));
+
             background.style.background = data.gradient;
 
             appContainer.classList.add('detail-view-active');
@@ -669,14 +707,33 @@
         });
 
         // Focus Trap for Detail View
+        function getFocusableElements(element) {
+            return element.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+        }
+
         detailView.addEventListener('keydown', (e) => {
             if (!detailView.classList.contains('visible')) return;
 
             if (e.key === 'Tab') {
-                // Since there is only one focusable element (closeButton), we just prevent tabbing away.
-                // In a more complex modal, we would check for first/last focusable elements.
-                e.preventDefault();
-                closeButton.focus();
+                const focusableContent = getFocusableElements(detailView);
+                if (focusableContent.length === 0) return;
+
+                const firstFocusableElement = focusableContent[0];
+                const lastFocusableElement = focusableContent[focusableContent.length - 1];
+
+                if (e.shiftKey) { // Shift + Tab
+                    if (document.activeElement === firstFocusableElement) {
+                        lastFocusableElement.focus();
+                        e.preventDefault();
+                    }
+                } else { // Tab
+                    if (document.activeElement === lastFocusableElement) {
+                        firstFocusableElement.focus();
+                        e.preventDefault();
+                    }
+                }
             }
         });
 
