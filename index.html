@@ -13,7 +13,7 @@
     <meta name="twitter:card" content="summary_large_image">
 
     <!-- Security -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
 
     <title>Whispers of Morocco</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -282,7 +282,7 @@
             align-items: flex-start;
             justify-content: flex-end;
             padding: 8vw;
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.7));
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.85));
             z-index: 20;
         }
         
@@ -672,7 +672,7 @@
                 card.setAttribute('aria-label', `View details for ${attraction.title}`);
                 card.innerHTML = `
                     <div class="shape"></div>
-                    <h2>${attraction.title}</h2>
+                    <h2 aria-hidden="true">${attraction.title}</h2>
                 `;
                 if (isFirstCard) {
                     card.tabIndex = 0;
@@ -708,9 +708,9 @@
 
         // Focus Trap for Detail View
         function getFocusableElements(element) {
-            return element.querySelectorAll(
+            return Array.from(element.querySelectorAll(
                 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            );
+            )).filter(el => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
         }
 
         detailView.addEventListener('keydown', (e) => {
@@ -747,7 +747,8 @@
             cardRects = cards.map(c => c.getBoundingClientRect());
             const firstCardTop = cardRects[0].top;
 
-            const firstCardOnSecondRowIndex = cardRects.findIndex(rect => rect.top > firstCardTop);
+            // Add tolerance for subpixel rendering issues (5px buffer)
+            const firstCardOnSecondRowIndex = cardRects.findIndex(rect => rect.top > firstCardTop + 5);
 
             numColumns = firstCardOnSecondRowIndex === -1 ? cards.length : firstCardOnSecondRowIndex;
         }
