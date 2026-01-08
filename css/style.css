@@ -263,6 +263,22 @@ body {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255,255,255,0.6);
     transition: all 0.4s var(--transition-ease);
+    overflow: hidden; /* Needed to clip the image */
+}
+
+.attraction-card .shape img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.4;
+    transition: opacity 0.4s var(--transition-ease);
+    filter: brightness(1.1) saturate(1.2); /* Soft, pastel look */
+}
+
+.attraction-card:hover .shape img,
+.attraction-card:focus .shape img {
+    opacity: 0.6;
+    filter: brightness(1.05) saturate(1.3);
 }
 
 .attraction-card:focus-visible .shape {

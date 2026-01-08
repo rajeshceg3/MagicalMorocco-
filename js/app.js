@@ -4,72 +4,84 @@ const attractionsData = {
         description: "Step into a world painted in cobalt. The Jardin Majorelle isn't just a garden; it's a living canvas where the electric blue of the villa sings against the deep greens of cacti and bamboo. You're not just observing; you're breathing in color, feeling the calm settle as you frame the perfect shot of a sun-drenched leaf against a blue wall.",
         gradient: "linear-gradient(145deg, var(--theme-majorelle-bg), var(--theme-majorelle-text))",
         clipPath: "polygon(0 0, 100% 20%, 100% 100%, 0 80%)",
+        image: "https://images.unsplash.com/photo-1585499831504-1f3c1fd867c3?auto=format&fit=crop&q=80&w=600",
     },
     chefchaouen: {
         title: "The Blue Symphony",
         description: "Imagine a city dipped in sky. In Chefchaouen, every corner turned reveals a new shade of blue, a new texture, a new story. Your lens will fall in love with the way light dances down cerulean alleys, the contrast of a brightly colored pot, and the quiet dignity of a cat napping on a blue-washed stoop. This is where you capture the soul of tranquility.",
         gradient: "linear-gradient(145deg, var(--theme-chefchaouen-bg), var(--theme-chefchaouen-text))",
         clipPath: "circle(50% at 50% 50%)",
+        image: "https://images.unsplash.com/photo-1569383746724-6f1b882b8f46?auto=format&fit=crop&q=80&w=600",
     },
     sahara: {
         title: "The Sea of Silence",
         description: "Out here, the world is stripped to its essentials: light, sand, and silence. The Sahara is an ocean of dunes, and you are its sole explorer. Point your camera at the horizon and capture the curve of the earth, the sharp line of a dune's crest, and the impossibly deep shadows. You'll feel the profound, humbling silence long after you've packed your gear.",
         gradient: "linear-gradient(145deg, var(--theme-sahara-bg), var(--theme-sahara-text))",
         clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+        image: "https://images.unsplash.com/photo-1489573280374-2e193c63726c?auto=format&fit=crop&q=80&w=600",
     },
     aitbenhaddou: {
         title: "The Earthen Fortress",
         description: "This is not a castle; it's a city sculpted from the desert itself. As you approach Aït Benhaddou, you'll see how its kasbahs catch the golden light, their mud-brick walls telling tales of ancient caravans. Your challenge is to capture its scale, its history, and the feeling of standing in a place where time has been etched into the very earth.",
         gradient: "linear-gradient(145deg, var(--theme-aitbenhaddou-bg), var(--theme-aitbenhaddou-text))",
         clipPath: "polygon(0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%, 100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%)",
+        image: "https://images.unsplash.com/photo-1569531955316-bb271f9c4531?auto=format&fit=crop&q=80&w=600",
     },
     fes: {
         title: "The Labyrinth of Time",
         description: "To enter Fes el-Bali is to step into another century. The medina is a dizzying, beautiful maze of 9,000 alleyways. Let your senses guide you—the scent of the tanneries, the clang of a coppersmith's hammer, the vibrant chaos of the souks. Your photography becomes a treasure hunt for details, for moments of quiet humanity in the bustling heart of medieval Morocco.",
         gradient: "linear-gradient(145deg, #e0bfa0, #c9ada7)",
         clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
+        image: "https://images.unsplash.com/photo-1538600838042-6a0c694ffab5?auto=format&fit=crop&q=80&w=600",
     },
     essaouira: {
         title: "The Wind-Kissed Port",
         description: "You can taste the salt in the air here. Essaouira is where the wild Atlantic crashes against ancient stone ramparts. Capture the motion: the flurry of seagulls, the bright blue fishing boats rocking in the harbor, the wind whipping through the narrow streets. It’s a place of energy and artistry, where the rhythm of the ocean sets the pace of life.",
         gradient: "linear-gradient(145deg, #a2d2ff, #8ecae6)",
         clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)",
+        image: "https://images.unsplash.com/photo-1758441301111-221320b2dff5?auto=format&fit=crop&q=80&w=600",
     },
     dades: {
         title: "The Crimson Canyon",
         description: "Nature's architecture is at its most dramatic in the Dadès Gorges. Your journey is a dance with the landscape, winding through roads that snake between towering cliffs of red and ochre rock. Focus on the immense scale, the textures of the 'Monkey Fingers' rock formations, and the surreal beauty of a kasbah nestled in this epic, cinematic valley.",
         gradient: "linear-gradient(145deg, #ffafcc, #ffc8dd)",
         clipPath: "polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%)",
+        image: "https://images.unsplash.com/photo-1635320550213-e801431ad3d0?auto=format&fit=crop&q=80&w=600",
     },
     merzouga: {
         title: "The Golden Threshold",
         description: "This is where the real desert begins. Merzouga is your gateway to the Erg Chebbi, where dunes rise like mountains of shimmering gold. Your mission is to chase the light—the soft glow of dawn breaking over the sands, the fiery spectacle of sunset. Here, you don't just take a picture of the Sahara; you capture its soul.",
         gradient: "linear-gradient(145deg, #ffca3a, #ffb703)",
         clipPath: "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)",
+        image: "https://images.unsplash.com/photo-1719995314973-295d09dfa5a3?auto=format&fit=crop&q=80&w=600",
     },
     casablanca: {
         title: "The Modern Heartbeat",
         description: "Feel the pulse of contemporary Morocco. Casablanca is a city of contrasts, where Art Deco architecture meets the soaring, modern marvel of the Hassan II Mosque. Your lens will find stories in the bustling streets, the grand boulevards, and the way the city's energy gathers at the edge of the Atlantic, forever looking forward.",
         gradient: "linear-gradient(145deg, #bde0fe, #a2d2ff)",
         clipPath: "polygon(0 0, 100% 0, 100% 85%, 0 100%)",
+        image: "https://images.unsplash.com/photo-1698083087402-886bd163b97e?auto=format&fit=crop&q=80&w=600",
     },
     rabat: {
         title: "The Royal Calm",
         description: "In Rabat, you'll find a different kind of quiet. This is a city of elegant gardens, imposing royal palaces, and ancient ruins that whisper of Roman times. Frame a shot of the serene blue and white Kasbah of the Udayas overlooking the sea, or find a peaceful moment in the tranquil Chellah necropolis, where history sleeps among the flowers.",
         gradient: "linear-gradient(145deg, #c1fba4, #90ee90)",
         clipPath: "polygon(0 15%, 100% 0, 100% 85%, 0 100%)",
+        image: "https://images.unsplash.com/photo-1760727750413-2d7075cb51d3?auto=format&fit=crop&q=80&w=600",
     },
     tangier: {
         title: "The Mythic Crossroads",
         description: "Stand at the edge of Africa and gaze across the strait to Europe. Tangier is a city of legendary encounters, a place that has inspired generations of artists and spies. Capture the mystery in the Caves of Hercules, the vibrant energy of the Grand Socco, and the feeling of being in a city that belongs to two worlds at once.",
         gradient: "linear-gradient(145deg, #bde0fe, #8ecae6)",
         clipPath: "polygon(0 0, 85% 0, 100% 100%, 15% 100%)",
+        image: "https://images.unsplash.com/photo-1570497700762-5b468aba1edc?auto=format&fit=crop&q=80&w=600",
     },
     meknes: {
         title: "The Sultan's Dream",
         description: "Meknes is a city built on a dream of imperial grandeur. You can feel the ambition of Sultan Moulay Ismail in the monumental Bab Mansour gate, a masterpiece of intricate tilework. Your photography here is about capturing power and scale—the endless arches of the royal stables, the sheer size of the city walls. It's a journey into Morocco's epic past.",
         gradient: "linear-gradient(145deg, #ffc8dd, #c9ada7)",
         clipPath: "polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)",
+        image: "https://images.unsplash.com/photo-1731800713184-12e955a30d4a?auto=format&fit=crop&q=80&w=600",
     },
 };
 
@@ -222,7 +234,9 @@ function initializeAttractions() {
         const locationName = id.charAt(0).toUpperCase() + id.slice(1);
         card.setAttribute('aria-label', `View details for ${attraction.title}`);
         card.innerHTML = `
-            <div class="shape"></div>
+            <div class="shape">
+                <img src="${attraction.image}" alt="" loading="lazy">
+            </div>
             <h2 aria-hidden="true">${attraction.title}</h2>
         `;
         if (isFirstCard) {
