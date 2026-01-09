@@ -5,7 +5,10 @@ const {
     initializeAttractions,
     getFocusableElements,
     getTransitionDuration,
-    init
+    init,
+    handleExploreClick,
+    handleAttractionClick,
+    handleCloseClick
 } = require('../../js/app.js');
 
 describe('App Logic', () => {
@@ -15,18 +18,27 @@ describe('App Logic', () => {
         document.body.innerHTML = `
             <div id="app-container">
                 <div id="background"></div>
-                <section id="hero-view"></section>
-                <section id="attractions-view"></section>
+                <section id="hero-view" class="visible"></section>
+                <section id="attractions-view">
+                    <!-- Cards will be injected here -->
+                </section>
                 <section id="detail-view">
-                    <button class="close-button"></button>
+                    <button class="close-button">Close</button>
                     <h2 id="detail-title"></h2>
                     <p id="detail-description"></p>
                 </section>
-                <button class="explore-button"></button>
+                <button class="explore-button">Explore</button>
             </div>
         `;
-        // Run init to bind variables
+        // Use fake timers for transitions
+        jest.useFakeTimers();
+        // Run init to bind variables and events
         init();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+        jest.clearAllMocks();
     });
 
     describe('attractionsData', () => {
@@ -107,7 +119,7 @@ describe('App Logic', () => {
     describe('initializeAttractions', () => {
         test('should populate attractions view', () => {
             const attractionsView = document.getElementById('attractions-view');
-            // Clear it first (init runs automatically in beforeEach)
+            // Clear it first (init runs automatically in beforeEach, but let's be safe)
             attractionsView.innerHTML = '';
 
             initializeAttractions();
@@ -147,13 +159,79 @@ describe('App Logic', () => {
              attractionsView.appendChild(card2);
              attractionsView.appendChild(card3);
 
-             // We can't access numColumns directly as it's not exported, but we can test the effect if we export it or
-             // test the navigation logic that relies on it.
-             // For this unit test, we just verifying logic runs without error.
-             // To test the result, we'd need to spy on `numColumns` or move it to a helper.
-             // Given the constraints, we trust the code logic for now or test via E2E navigation.
-
              expect(() => calculateGrid()).not.toThrow();
+        });
+    });
+
+    describe('User Interactions', () => {
+        test('handleExploreClick should transition from hero to attractions', () => {
+            const heroView = document.getElementById('hero-view');
+            const attractionsView = document.getElementById('attractions-view');
+            const exploreButton = document.querySelector('.explore-button');
+
+            exploreButton.click();
+
+            expect(heroView.classList.contains('hidden')).toBe(true);
+            expect(attractionsView.classList.contains('visible')).toBe(true);
+
+            // Fast-forward timers to handle transition end callback
+            jest.runAllTimers();
+
+            // Verify focus moves to first card
+            const firstCard = attractionsView.querySelector('.attraction-card[tabindex="0"]');
+            expect(document.activeElement).toBe(firstCard);
+        });
+
+        test('handleAttractionClick should open detail view', () => {
+            const attractionsView = document.getElementById('attractions-view');
+            const detailView = document.getElementById('detail-view');
+            const appContainer = document.getElementById('app-container');
+            const detailTitle = document.getElementById('detail-title');
+
+            // Populate attractions
+            initializeAttractions();
+            const firstCard = attractionsView.querySelector('.attraction-card');
+
+            firstCard.click();
+
+            expect(appContainer.classList.contains('detail-view-active')).toBe(true);
+            expect(attractionsView.classList.contains('visible')).toBe(false);
+
+            // Verify content update
+            const attractionId = firstCard.dataset.id;
+            expect(detailTitle.textContent).toBe(attractionsData[attractionId].title);
+
+            // Fast-forward transitions
+            jest.runAllTimers();
+
+            expect(detailView.classList.contains('visible')).toBe(true);
+            expect(document.activeElement).toBe(document.querySelector('.close-button'));
+        });
+
+        test('handleCloseClick should close detail view and return focus', () => {
+            const attractionsView = document.getElementById('attractions-view');
+            const detailView = document.getElementById('detail-view');
+            const appContainer = document.getElementById('app-container');
+            const closeButton = document.querySelector('.close-button');
+
+            // Setup: Open a card first
+            initializeAttractions();
+            const firstCard = attractionsView.querySelector('.attraction-card');
+            firstCard.focus(); // Set last focused element
+            firstCard.click();
+            jest.runAllTimers();
+
+            // Act: Close
+            closeButton.click();
+
+            expect(appContainer.classList.contains('detail-view-active')).toBe(false);
+            expect(detailView.classList.contains('visible')).toBe(false);
+
+            // Fast-forward transitions
+            jest.runAllTimers();
+
+            expect(attractionsView.classList.contains('visible')).toBe(true);
+            expect(document.activeElement).toBe(firstCard);
         });
     });
 });

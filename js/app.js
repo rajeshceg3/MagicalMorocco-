@@ -279,6 +279,15 @@ function calculateGrid() {
 
 // Main Init Function to bind events
 function init() {
+    // Prevent duplicate initialization
+    if (appContainer && document.body.contains(appContainer)) {
+        // If appContainer is already set and in the DOM, we might be re-running.
+        // For testing, we might want to reset listeners, but simple idempotency check is hard
+        // without keeping track of listeners.
+        // Ideally, we should remove listeners before adding, but anonymous functions make that hard.
+        // For now, we'll re-query elements to handle DOM replacements in tests.
+    }
+
     appContainer = document.getElementById('app-container');
     background = document.getElementById('background');
     heroView = document.getElementById('hero-view');
@@ -291,7 +300,10 @@ function init() {
 
     if (background) background.style.background = initialGradient;
 
-    // Event Listeners
+    // Event Listeners - Note: In a real app, you might want to remove old listeners if init is called repeatedly.
+    // For this specific codebase structure, we assume init is called once per page load,
+    // or manually in tests where DOM is reset (so elements are new).
+
     if (exploreButton) exploreButton.addEventListener('click', handleExploreClick);
     if (closeButton) closeButton.addEventListener('click', handleCloseClick);
 
@@ -432,6 +444,9 @@ if (typeof module !== 'undefined') {
         initializeAttractions,
         getFocusableElements,
         getTransitionDuration,
+        handleExploreClick,
+        handleAttractionClick,
+        handleCloseClick,
         init // Export init to call it manually in tests
     };
 }
