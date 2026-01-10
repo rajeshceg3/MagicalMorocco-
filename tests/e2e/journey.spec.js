@@ -70,7 +70,9 @@ test.describe('User Journey', () => {
     // Or we can rely on our app logic.
 
     // Let's test arrow keys.
-    await page.keyboard.press('Tab'); // Focus first card if not already
+    // Ensure focus is on the first card
+    await firstCard.focus();
+    await expect(firstCard).toBeFocused();
 
     await page.keyboard.press('ArrowRight');
     const secondCard = page.locator('.attraction-card').nth(1);
