@@ -53,13 +53,24 @@ body {
     position: absolute;
     inset: 0;
     z-index: 0;
-    animation: gradient-animation 10s ease infinite;
+    overflow: hidden;
 }
 
-@keyframes gradient-animation {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+.background-surface::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: inherit; /* Inherits the dynamic gradient */
+    animation: gradient-pan 20s ease infinite alternate;
+    will-change: transform;
+}
+
+@keyframes gradient-pan {
+    0% { transform: translate3d(-10%, -10%, 0); }
+    100% { transform: translate3d(10%, 10%, 0); }
 }
 
 /* --- Geometric Pattern Overlay --- */

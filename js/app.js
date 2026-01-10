@@ -423,11 +423,13 @@ function init() {
             calculateGrid();
     });
 
-    initializeAttractions();
+    if (attractionsView) {
+        initializeAttractions();
+    }
 }
 
 // Auto-run if in browser
-if (typeof document !== 'undefined') {
+if (typeof document !== 'undefined' && typeof module === 'undefined') {
     // Wait for DOM
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
