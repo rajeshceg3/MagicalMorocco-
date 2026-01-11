@@ -86,7 +86,7 @@ const attractionsData = {
 };
 
 // --- Architected State Management and Event Handling ---
-let appContainer, background, heroView, attractionsView, detailView, exploreButton, attractionCards, closeButton, detailTitle, detailDescription;
+let appContainer, background, heroView, attractionsView, detailView, exploreButton, attractionCards, closeButton, detailTitle, detailDescription, skipLink;
 
 // State Machine
 let isTransitioning = false;
@@ -223,7 +223,11 @@ function handleCloseClick() {
 }
 
 // --- Initialization ---
-function initializeAttractions() {
+function initializeAttractions(container) {
+    // Robustness: Allow container injection for testing
+    const targetContainer = container || attractionsView;
+    if (!targetContainer) return;
+
     const fragment = document.createDocumentFragment();
     let isFirstCard = true;
     for (const id in attractionsData) {
@@ -233,24 +237,41 @@ function initializeAttractions() {
         card.dataset.id = id;
         const locationName = id.charAt(0).toUpperCase() + id.slice(1);
         card.setAttribute('aria-label', `View details for ${attraction.title}`);
-        card.innerHTML = `
-            <div class="shape">
-                <img src="${attraction.image}" alt="" loading="lazy">
-            </div>
-            <h2 aria-hidden="true">${attraction.title}</h2>
-        `;
+
+        // Use DOM methods to create image for better control (onerror)
+        const shapeDiv = document.createElement('div');
+        shapeDiv.className = 'shape';
+        shapeDiv.style.clipPath = attraction.clipPath;
+
+        const img = document.createElement('img');
+        img.src = attraction.image;
+        img.alt = "";
+        img.loading = "lazy";
+        // Robustness: Hide broken images
+        img.onerror = function() {
+            this.style.display = 'none';
+        };
+
+        shapeDiv.appendChild(img);
+
+        const h2 = document.createElement('h2');
+        h2.setAttribute('aria-hidden', 'true');
+        h2.textContent = attraction.title;
+
+        card.appendChild(shapeDiv);
+        card.appendChild(h2);
+
         if (isFirstCard) {
             card.tabIndex = 0;
             isFirstCard = false;
         } else {
             card.tabIndex = -1;
         }
-        // Add clip-path from data
-        card.querySelector('.shape').style.clipPath = attraction.clipPath;
+
         card.addEventListener('click', handleAttractionClick);
         fragment.appendChild(card);
     }
-    attractionsView.appendChild(fragment);
+    targetContainer.appendChild(fragment);
 }
 
 
@@ -275,6 +296,9 @@ function calculateGrid() {
     const firstCardOnSecondRowIndex = cardRects.findIndex(rect => rect.top > firstCardTop + 5);
 
     numColumns = firstCardOnSecondRowIndex === -1 ? cards.length : firstCardOnSecondRowIndex;
+
+    // Safety fallback: numColumns must be at least 1
+    if (numColumns < 1) numColumns = 1;
 }
 
 // Main Init Function to bind events
@@ -297,6 +321,7 @@ function init() {
     closeButton = document.querySelector('.close-button');
     detailTitle = document.getElementById('detail-title');
     detailDescription = document.getElementById('detail-description');
+    skipLink = document.querySelector('.skip-link');
 
     if (background) background.style.background = initialGradient;
 
@@ -306,6 +331,12 @@ function init() {
 
     if (exploreButton) exploreButton.addEventListener('click', handleExploreClick);
     if (closeButton) closeButton.addEventListener('click', handleCloseClick);
+    if (skipLink) {
+        skipLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleExploreClick();
+        });
+    }
 
     // Add Escape key handler for detail view
     document.addEventListener('keydown', (e) => {
@@ -424,7 +455,7 @@ function init() {
     });
 
     if (attractionsView) {
-        initializeAttractions();
+        initializeAttractions(attractionsView);
     }
 }
 
