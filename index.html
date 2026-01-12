@@ -13,7 +13,7 @@
     <meta name="twitter:card" content="summary_large_image">
 
     <!-- Security -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
 
     <title>Whispers of Morocco</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,7 +40,7 @@
         <section id="detail-view" class="view" role="dialog" aria-modal="true" aria-labelledby="detail-title" aria-describedby="detail-description">
              <!-- FIX: Changed div to button for accessibility -->
             <button class="close-button" aria-label="Close details view"></button>
-            <div class="detail-scroll-container" tabindex="0" aria-label="Detail content">
+            <div class="detail-scroll-container" role="region" tabindex="0" aria-label="Detail content">
                 <div class="content-wrapper">
                     <h2 id="detail-title"></h2>
                     <p id="detail-description"></p>

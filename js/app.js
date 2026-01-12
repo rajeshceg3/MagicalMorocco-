@@ -129,15 +129,22 @@ function onTransitionEnd(element, duration, callback) {
 }
 
 
-function handleExploreClick() {
+function handleExploreClick(pushToHistory = true) {
     if (isTransitioning) return;
     isTransitioning = true;
+
+    if (pushToHistory) {
+        history.pushState({view: 'attractions'}, '', '#attractions');
+    }
 
     heroView.classList.add('hidden');
     attractionsView.classList.add('visible');
 
     // Wait for the transition to end on the attractions view
     onTransitionEnd(attractionsView, getTransitionDuration(), () => {
+        // Abort if state changed (e.g. back to hero)
+        if (heroView.classList.contains('hidden') === false) return;
+
         isTransitioning = false;
         // Focus the first attraction card to enable immediate keyboard navigation
         const firstCard = attractionsView.querySelector('.attraction-card[tabindex="0"]');
@@ -147,18 +154,29 @@ function handleExploreClick() {
     });
 }
 
-function handleAttractionClick(event) {
-    if (isTransitioning) return;
+function handleAttractionClick(event, pushToHistory = true) {
+    // Allow history navigation to override transition lock
+    if (isTransitioning && pushToHistory) return;
     isTransitioning = true;
     lastFocusedElement = document.activeElement;
 
     // Use currentTarget to ensure we get the button, even if an inner element is clicked
-    const card = event.currentTarget;
-    const id = card.dataset.id;
+    // Or if called programmatically, handle differently
+    let id;
+    if (typeof event === 'string') {
+        id = event;
+    } else {
+        id = event.currentTarget.dataset.id;
+    }
+
     const data = attractionsData[id];
 
     // Guard clause for robustness
     if (!data) return;
+
+    if (pushToHistory) {
+        history.pushState({view: 'detail', id: id}, '', `#${id}`);
+    }
 
     // Populate detail view
     const locationName = id.charAt(0).toUpperCase() + id.slice(1);
@@ -178,10 +196,16 @@ function handleAttractionClick(event) {
 
     // Wait for attractions view to fade out before showing the detail view
     onTransitionEnd(attractionsView, getTransitionDuration(), () => {
+        // Abort if state changed (e.g. detail closed)
+        if (!appContainer.classList.contains('detail-view-active')) return;
+
         detailView.classList.add('visible');
 
         // Wait for the detail view to finish its main transition
         onTransitionEnd(detailView, getTransitionDuration(), () => {
+            // Abort if state changed
+            if (!appContainer.classList.contains('detail-view-active')) return;
+
             // Close button has a transition delay of 0.8s (or var(--transition-speed))
             // We must wait for it to become interactive/visible before focusing.
             // The CSS delay is 0.8s, matching transition speed.
@@ -191,16 +215,32 @@ function handleAttractionClick(event) {
             // If reduced motion, delay is 0.
             const delay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 400;
             setTimeout(() => {
-                    closeButton.focus();
-                    isTransitioning = false;
+                    // Check one last time before focusing
+                    if (appContainer.classList.contains('detail-view-active')) {
+                        closeButton.focus();
+                        isTransitioning = false;
+                    }
             }, delay);
         });
     });
 }
 
-function handleCloseClick() {
-    if (isTransitioning) return;
+function handleCloseClick(pushToHistory = true) {
+    // Allow history navigation to override transition lock
+    if (isTransitioning && pushToHistory) return;
     isTransitioning = true;
+
+    if (pushToHistory) {
+         // If closing details, we go back to attractions.
+         // But we might be closing via Back button (pushToHistory=false).
+         // If closing via Button (pushToHistory=true), we should PUSH 'attractions' or BACK?
+         // Usually back. But simple SPA logic: just push new state or replace?
+         // If we arrived at #detail via #attractions, going back should be history.back()?
+         // But that might leave the domain.
+         // Let's stick to state pushing for forward navigation, or history.back() if we know we came from there.
+         // Simplest robust way: push state 'attractions'.
+         history.pushState({view: 'attractions'}, '', '#attractions');
+    }
 
     appContainer.classList.remove('detail-view-active');
     detailView.classList.remove('visible');
@@ -231,6 +271,7 @@ function initializeAttractions(container) {
     const fragment = document.createDocumentFragment();
     let isFirstCard = true;
     for (const id in attractionsData) {
+        if (!Object.prototype.hasOwnProperty.call(attractionsData, id)) continue;
         const attraction = attractionsData[id];
         const card = document.createElement('button');
         card.className = 'attraction-card';
@@ -452,6 +493,50 @@ function init() {
             // Invalidate cache and immediately recalculate if we are in attractions view
             // to prevent weird navigation behavior before next keypress
             calculateGrid();
+    });
+
+    // History API Handler
+    window.addEventListener('popstate', (event) => {
+        if (!event.state) {
+            // Back to Root (Hero View)
+            // Force reset to initial state to ensure UI matches URL
+            if (appContainer.classList.contains('detail-view-active')) {
+                 appContainer.classList.remove('detail-view-active');
+                 detailView.classList.remove('visible');
+            }
+
+            if (attractionsView.classList.contains('visible')) {
+                attractionsView.classList.remove('visible');
+            }
+
+            if (heroView.classList.contains('hidden')) {
+                heroView.classList.remove('hidden');
+            }
+
+            background.style.background = initialGradient;
+            isTransitioning = false;
+
+            // Focus explore button for accessibility
+            if (exploreButton) exploreButton.focus();
+
+            return;
+        }
+
+        const state = event.state;
+        if (state.view === 'attractions') {
+            if (appContainer.classList.contains('detail-view-active')) {
+                handleCloseClick(false);
+            } else if (!attractionsView.classList.contains('visible')) {
+                handleExploreClick(false);
+            }
+        } else if (state.view === 'detail' && state.id) {
+            // If we are already in detail view for this ID, do nothing.
+            // If in another detail, swap? (Not possible with current UI flow easily)
+            // If in attractions, open detail.
+            if (!appContainer.classList.contains('detail-view-active')) {
+                 handleAttractionClick(state.id, false);
+            }
+        }
     });
 
     if (attractionsView) {
