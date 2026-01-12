@@ -1,71 +1,53 @@
-# 🛡️ OPERATIONAL INTELLIGENCE: VULNERABILITY & BUG ASSESSMENT
-**TARGET:** Whispers of Morocco Web Application
-**DATE:** 2026-01-06 (Updated Assessment)
-**OFFICER:** Jules (Task Force Veteran QA)
+# Tactical Bug Report: Operation Morocco Validation
 
-## 🚨 EXECUTIVE SUMMARY
-The application demonstrates solid core functionality, but a rigorous forensic analysis has revealed critical weaknesses in test infrastructure, accessibility compliance, and performance optimization. The failure of the primary unit test suite poses a significant risk to future maintainability. New vulnerabilities regarding Content Security Policy and brittle inline JavaScript have been identified.
+**Date:** 2024-05-22
+**Author:** Jules (Task Force QA)
+**Classification:** CLASSIFIED // INTERNAL EYES ONLY
 
----
+## Mission Overview
+Comprehensive vulnerability and stability assessment of the "Whispers of Morocco" web application. The objective was to identify architectural weaknesses, security flaws, and user experience disruption vectors.
 
-## 🔴 CRITICAL VULNERABILITIES (MISSION CRITICAL)
+## Executive Summary
+The target application exhibits a generally stable visual interface but suffers from critical navigational deficiencies and security policy violations. The lack of History API integration poses a severe threat to user retention (Back Button Trap). Security posture is compromised by loose CSP headers and prohibited artifacts.
 
-### 1. **Unit Test Initialization Failure** [INFRASTRUCTURE]
-*   **Severity:** **CRITICAL**
-*   **Description:** The unit test suite (`tests/unit/app.test.js`) fails to execute because `js/app.js` attempts to manipulate the DOM immediately upon module load (specifically `initializeAttractions`), before the test harness can establish the mock DOM.
-*   **Impact:** Zero unit test coverage. Inability to verify logic changes safely.
-*   **Recommendation:** Refactor `js/app.js` to defer initialization or check for DOM element existence before execution.
+## Vulnerability Manifest
 
-### 2. **Cross-Site Scripting (XSS) Surface** [SECURITY]
-*   **Severity:** **HIGH**
-*   **Description:** The `Content-Security-Policy` header permits `unsafe-inline` for scripts, and `index.html` utilizes an inline `onclick` handler for the "Skip to Content" link.
-*   **Impact:** Increases attack surface for XSS if untrusted content were injected.
-*   **Recommendation:** Remove inline event handlers and restrict CSP `script-src` to `self`.
+### 1. [CRITICAL] Back Button Disruption Vector
+*   **Description:** The application functions as a Single Page Application (SPA) but fails to utilize the Browser History API (`pushState`/`popstate`).
+*   **Impact:** Mission Critical. Users attempting to "go back" from the Detail View or Attractions View using the browser's back button are ejected from the application entirely, resulting in loss of engagement.
+*   **Reproduction:**
+    1.  Navigate to application.
+    2.  Click "Begin the Journey" (Enter Attractions View).
+    3.  Click an attraction (Enter Detail View).
+    4.  Press Browser Back Button.
+    5.  **Result:** User leaves the domain instead of closing the modal.
+*   **Remediation:** Implement `history.pushState` on view transitions and a `popstate` event listener to handle navigation state.
 
----
+### 2. [HIGH] Artifact Contamination (`package-lock.json`)
+*   **Description:** Detected prohibited file `package-lock.json` in the root directory.
+*   **Impact:** Operational. Violation of protocol requiring `pnpm-lock.yaml`. Potential for dependency version drift and conflicts with `pnpm` workflow.
+*   **Remediation:** Immediate neutralization (deletion) of `package-lock.json`.
 
-## 🟠 HIGH SEVERITY BUGS (OPERATIONAL RISK)
+### 3. [MEDIUM] Weak Content Security Policy (CSP)
+*   **Description:** The `Content-Security-Policy` header in `index.html` includes `style-src 'unsafe-inline'`.
+*   **Impact:** Security. Increases attack surface for Cross-Site Scripting (XSS) by allowing inline style injection.
+*   **Analysis:** Code review confirms that inline styles are set via JavaScript (`element.style.prop`), which is compatible with `style-src 'self'`. The `unsafe-inline` directive is unnecessary.
+*   **Remediation:** Remove `'unsafe-inline'` from `style-src` directive.
 
-### 3. **Keyboard Navigation Failure** [ACCESSIBILITY]
-*   **Severity:** **HIGH**
-*   **Description:** End-to-End tests verify that arrow key navigation between attraction cards is broken.
-*   **Observation:** If `calculateGrid` fails to determine columns (e.g., in a test environment with no layout), `numColumns` might be 0, causing navigation logic to misbehave.
-*   **Impact:** Users relying on keyboard navigation are trapped.
-*   **Recommendation:** Debug `keydown` logic and ensure `numColumns` has a safe fallback (minimum 1).
+### 4. [MEDIUM] Unsafe Iteration Logic
+*   **Description:** `initializeAttractions` function uses a `for...in` loop without a `hasOwnProperty` check.
+*   **Impact:** Stability. Susceptible to prototype pollution attacks or unexpected behavior if the `Object` prototype is modified.
+*   **Remediation:** Implement `Object.prototype.hasOwnProperty.call()` check or use `Object.keys()`.
 
-### 4. **Animation Performance Degradation** [PERFORMANCE]
-*   **Severity:** **HIGH**
-*   **Description:** The background gradient animation uses `background-position` (or similar inefficient properties in older versions), which triggers repaints.
-*   **Status:** Investigation shows `css/style.css` currently uses `transform: translate3d` for `gradient-pan`. This appears **RESOLVED** in code, but verification is needed to ensure no regressions.
+### 5. [LOW] Accessibility Labeling Precision
+*   **Description:** The `.detail-scroll-container` has `tabindex="0"` and `aria-label` but lacks a specific `role` (e.g., `role="region"`).
+*   **Impact:** User Experience. Assistive technologies may not correctly announce the region type.
+*   **Remediation:** Add `role="region"` to the container.
 
----
+## Operational Plan
+1.  **Neutralize Artifacts:** Delete `package-lock.json`.
+2.  **Harden Security:** Tighten CSP in `index.html`.
+3.  **Patch Logic:** Refactor loop in `js/app.js` and add `role="region"`.
+4.  **Implement Navigation System:** Integrate History API in `js/app.js` to solve the Back Button Trap.
 
-## 🟡 MEDIUM SEVERITY BUGS (TACTICAL DISRUPTION)
-
-### 5. **Close Button Scroll Displacement** [UX]
-*   **Severity:** **MEDIUM**
-*   **Description:** The close button in the detail view is fixed, but the scrollable content container (`.detail-scroll-container`) lacks sufficient top padding.
-*   **Impact:** Text content can scroll *under* the close button, making it unreadable or creating visual clutter.
-*   **Recommendation:** Increase `padding-top` on `.detail-scroll-container` to account for the button's position and safe area.
-
-### 6. **Fragile "Skip to Content" Link** [ARCHITECTURE]
-*   **Severity:** **MEDIUM**
-*   **Description:** The skip link uses `onclick="document.querySelector('.explore-button').click(); return false;"`. This couples the skip link to the presence of a specific class and relies on inline JS.
-*   **Recommendation:** Move logic to `js/app.js` using a robust event listener.
-
----
-
-## 🔵 LOW SEVERITY BUGS (EDGE CASES)
-
-### 7. **Image Loading Robustness** [ROBUSTNESS]
-*   **Severity:** **LOW**
-*   **Description:** If images in `attractionsData` fail to load (e.g., network issues), the broken image icon is displayed.
-*   **Recommendation:** Add an `onerror` handler to hide the image or show a placeholder.
-
----
-
-## ✅ RESOLVED ISSUES
-*   **Focus High Contrast:** `outline: 2px solid transparent` confirmed present in `css/style.css`.
-*   **Guard Clauses:** `handleAttractionClick` includes `if (!data) return;`.
-
-**END OF REPORT**
+**End of Briefing.**
