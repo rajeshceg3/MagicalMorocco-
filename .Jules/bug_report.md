@@ -1,53 +1,57 @@
-# Tactical Bug Report: Operation Morocco Validation
+# TACTICAL INTELLIGENCE BRIEFING: WHISPERS OF MOROCCO
+**DATE**: 2024-05-23
+**TARGET**: Web Application "Whispers of Morocco"
+**OPERATIVE**: Jules (QA Task Force)
 
-**Date:** 2024-05-22
-**Author:** Jules (Task Force QA)
-**Classification:** CLASSIFIED // INTERNAL EYES ONLY
+## MISSION STATUS: CRITICAL VULNERABILITIES DETECTED
 
-## Mission Overview
-Comprehensive vulnerability and stability assessment of the "Whispers of Morocco" web application. The objective was to identify architectural weaknesses, security flaws, and user experience disruption vectors.
+Comprehensive forensic analysis has revealed multiple system integrity failures ranging from critical architectural flaws to user experience disruption vectors. Immediate remediation is required to ensure operational resilience.
 
-## Executive Summary
-The target application exhibits a generally stable visual interface but suffers from critical navigational deficiencies and security policy violations. The lack of History API integration poses a severe threat to user retention (Back Button Trap). Security posture is compromised by loose CSP headers and prohibited artifacts.
+---
 
-## Vulnerability Manifest
+## FINDINGS LOG
 
-### 1. [CRITICAL] Back Button Disruption Vector
-*   **Description:** The application functions as a Single Page Application (SPA) but fails to utilize the Browser History API (`pushState`/`popstate`).
-*   **Impact:** Mission Critical. Users attempting to "go back" from the Detail View or Attractions View using the browser's back button are ejected from the application entirely, resulting in loss of engagement.
-*   **Reproduction:**
-    1.  Navigate to application.
-    2.  Click "Begin the Journey" (Enter Attractions View).
-    3.  Click an attraction (Enter Detail View).
-    4.  Press Browser Back Button.
-    5.  **Result:** User leaves the domain instead of closing the modal.
-*   **Remediation:** Implement `history.pushState` on view transitions and a `popstate` event listener to handle navigation state.
+### [C-01] CRITICAL: Deep Link Neutralization (Deep Linking Failure)
+**SEVERITY**: CRITICAL
+**IMPACT**: Complete failure of external entry points. Users cannot share or bookmark specific locations.
+**DESCRIPTION**: The application fails to initialize the correct state when loading a URL with a hash fragment (e.g., `/#majorelle`). The initialization sequence (`init()`) ignores `window.location.hash` and defaults to the Hero View.
+**REPRODUCTION**:
+1. Navigate to `http://localhost:8080/#majorelle` in a fresh browser session.
+2. **OBSERVED**: User sees the Hero View ("Morocco: A Canvas of Light").
+3. **EXPECTED**: User sees the Detail View for "Majorelle".
 
-### 2. [HIGH] Artifact Contamination (`package-lock.json`)
-*   **Description:** Detected prohibited file `package-lock.json` in the root directory.
-*   **Impact:** Operational. Violation of protocol requiring `pnpm-lock.yaml`. Potential for dependency version drift and conflicts with `pnpm` workflow.
-*   **Remediation:** Immediate neutralization (deletion) of `package-lock.json`.
+### [H-01] HIGH: Navigation Stack Loop (History Trap)
+**SEVERITY**: HIGH
+**IMPACT**: User entrapment. Disruption of browser navigation.
+**DESCRIPTION**: The "Close" action in the Detail View consistently pushes a new state (`#attractions`) to the browser history instead of reversing the previous action. This creates an infinite forward loop. Repeatedly opening and closing details fills the history stack with redundant entries, making the "Back" button effectively useless for exiting the application.
+**REPRODUCTION**:
+1. Explore -> Open Card -> Close Card -> Open Card -> Close Card.
+2. Attempt to use Browser Back button to return to Hero View.
+3. **OBSERVED**: User must press Back 5+ times to exit.
+4. **EXPECTED**: "Close" should function as "Back" or "Replace", keeping the history clean.
 
-### 3. [MEDIUM] Weak Content Security Policy (CSP)
-*   **Description:** The `Content-Security-Policy` header in `index.html` includes `style-src 'unsafe-inline'`.
-*   **Impact:** Security. Increases attack surface for Cross-Site Scripting (XSS) by allowing inline style injection.
-*   **Analysis:** Code review confirms that inline styles are set via JavaScript (`element.style.prop`), which is compatible with `style-src 'self'`. The `unsafe-inline` directive is unnecessary.
-*   **Remediation:** Remove `'unsafe-inline'` from `style-src` directive.
+### [M-01] MEDIUM: Transition State Deadlock (Race Condition)
+**SEVERITY**: MEDIUM
+**IMPACT**: UI Freeze.
+**DESCRIPTION**: The `isTransitioning` state lock logic in `handleExploreClick` includes a guard clause that returns early without resetting `isTransitioning` if the `heroView` is not hidden. While intended to prevent logic errors, a race condition where the transition ends but the class is not yet updated can permanently lock the interface.
 
-### 4. [MEDIUM] Unsafe Iteration Logic
-*   **Description:** `initializeAttractions` function uses a `for...in` loop without a `hasOwnProperty` check.
-*   **Impact:** Stability. Susceptible to prototype pollution attacks or unexpected behavior if the `Object` prototype is modified.
-*   **Remediation:** Implement `Object.prototype.hasOwnProperty.call()` check or use `Object.keys()`.
+### [L-01] LOW: Accessibility Contrast Integrity
+**SEVERITY**: LOW
+**IMPACT**: Reduced readability for visually impaired users.
+**DESCRIPTION**: Secondary text elements and certain overlay configurations may fall below WCAG AA contrast ratio standards depending on the background image variance. Specifically, the button text (`#4a4e69` on `#e5d9d7`) is compliant (5.89:1) but secondary text (`#5e515c` on `#f4f1de`) is 5.72:1, which is acceptable but close to the limit. Detail view overlay opacity (0.5 to 0.85) may be insufficient against white backgrounds.
 
-### 5. [LOW] Accessibility Labeling Precision
-*   **Description:** The `.detail-scroll-container` has `tabindex="0"` and `aria-label` but lacks a specific `role` (e.g., `role="region"`).
-*   **Impact:** User Experience. Assistive technologies may not correctly announce the region type.
-*   **Remediation:** Add `role="region"` to the container.
+### [L-02] LOW: Grid Calculation Fragility
+**SEVERITY**: LOW
+**IMPACT**: Keyboard navigation failure.
+**DESCRIPTION**: `calculateGrid` relies on `getBoundingClientRect` and a hardcoded pixel buffer (5px). This logic is susceptible to failure if DOM elements are not fully rendered, leading to incorrect arrow key navigation behavior.
 
-## Operational Plan
-1.  **Neutralize Artifacts:** Delete `package-lock.json`.
-2.  **Harden Security:** Tighten CSP in `index.html`.
-3.  **Patch Logic:** Refactor loop in `js/app.js` and add `role="region"`.
-4.  **Implement Navigation System:** Integrate History API in `js/app.js` to solve the Back Button Trap.
+---
 
-**End of Briefing.**
+## REMEDIATION STRATEGY
+
+1.  **Neutralize C-01**: Implement logic in `init()` to parse `window.location.hash`. If a valid ID is found, immediately construct the corresponding Detail View state and DOM configuration, bypassing the Hero View.
+2.  **Resolve H-01**: Refactor `handleCloseClick`. Logic should determine if the previous state was the parent view. If so, use `history.back()`. If not (deep link), use `history.replaceState()` or `pushState()` judiciously.
+3.  **Harden M-01**: Ensure `isTransitioning` is always reset in the `finally` block or guaranteed callback of transition handlers.
+4.  **Enhance L-01/L-02**: Adjust CSS variables for higher contrast; add fallback logic for grid calculations.
+
+**END OF REPORT**
