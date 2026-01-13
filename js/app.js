@@ -142,8 +142,11 @@ function handleExploreClick(pushToHistory = true) {
 
     // Wait for the transition to end on the attractions view
     onTransitionEnd(attractionsView, getTransitionDuration(), () => {
-        // Abort if state changed (e.g. back to hero)
-        if (heroView.classList.contains('hidden') === false) return;
+        // [M-01] Fix: Always reset isTransitioning, but only perform actions if state matches
+        if (heroView.classList.contains('hidden') === false) {
+            isTransitioning = false;
+            return;
+        }
 
         isTransitioning = false;
         // Focus the first attraction card to enable immediate keyboard navigation
@@ -152,6 +155,25 @@ function handleExploreClick(pushToHistory = true) {
             firstCard.focus();
         }
     });
+}
+
+// [Refactor] Render logic extracted for reuse (DRY)
+function renderDetailView(id) {
+    const data = attractionsData[id];
+    if (!data) return false;
+
+    const locationName = id.charAt(0).toUpperCase() + id.slice(1);
+    detailTitle.textContent = data.title; // Use the descriptive title
+
+    // Safe DOM construction instead of innerHTML
+    detailDescription.textContent = '';
+    const strong = document.createElement('strong');
+    strong.textContent = `${locationName}.`;
+    detailDescription.appendChild(strong);
+    detailDescription.appendChild(document.createTextNode(` ${data.description}`));
+
+    background.style.background = data.gradient;
+    return true;
 }
 
 function handleAttractionClick(event, pushToHistory = true) {
@@ -169,27 +191,14 @@ function handleAttractionClick(event, pushToHistory = true) {
         id = event.currentTarget.dataset.id;
     }
 
-    const data = attractionsData[id];
-
-    // Guard clause for robustness
-    if (!data) return;
+    if (!renderDetailView(id)) {
+        isTransitioning = false;
+        return;
+    }
 
     if (pushToHistory) {
         history.pushState({view: 'detail', id: id}, '', `#${id}`);
     }
-
-    // Populate detail view
-    const locationName = id.charAt(0).toUpperCase() + id.slice(1);
-    detailTitle.textContent = data.title; // Use the descriptive title
-
-    // Safe DOM construction instead of innerHTML
-    detailDescription.textContent = '';
-    const strong = document.createElement('strong');
-    strong.textContent = `${locationName}.`;
-    detailDescription.appendChild(strong);
-    detailDescription.appendChild(document.createTextNode(` ${data.description}`));
-
-    background.style.background = data.gradient;
 
     appContainer.classList.add('detail-view-active');
     attractionsView.classList.remove('visible');
@@ -231,15 +240,24 @@ function handleCloseClick(pushToHistory = true) {
     isTransitioning = true;
 
     if (pushToHistory) {
-         // If closing details, we go back to attractions.
-         // But we might be closing via Back button (pushToHistory=false).
-         // If closing via Button (pushToHistory=true), we should PUSH 'attractions' or BACK?
-         // Usually back. But simple SPA logic: just push new state or replace?
-         // If we arrived at #detail via #attractions, going back should be history.back()?
-         // But that might leave the domain.
-         // Let's stick to state pushing for forward navigation, or history.back() if we know we came from there.
-         // Simplest robust way: push state 'attractions'.
-         history.pushState({view: 'attractions'}, '', '#attractions');
+        // [H-01] Fix: Check if we can go back instead of pushing new state
+        // If we came from attractions, we want to go back.
+        // If we deep linked, we might not have a history entry for attractions.
+        // Best effort:
+        // Check if history.state is detail.
+        if (history.state && history.state.view === 'detail') {
+             history.back();
+             // Important: history.back() is async. The popstate event will handle the UI update.
+             // We should NOT proceed to manually update UI here if we are going back.
+             // But popstate event happens *after* we return.
+             // Wait, if we call history.back(), popstate fires.
+             // Our popstate handler calls handleCloseClick(false).
+             // So we should return here to avoid double execution.
+             return;
+        } else {
+             // Fallback for weird states
+             history.pushState({view: 'attractions'}, '', '#attractions');
+        }
     }
 
     appContainer.classList.remove('detail-view-active');
@@ -328,9 +346,19 @@ let cardRects = []; // Cached card dimensions
 
 function calculateGrid() {
     const cards = Array.from(document.querySelectorAll('.attraction-card'));
-    if (cards.length === 0) return;
+    if (cards.length === 0) {
+        numColumns = 1;
+        return;
+    }
 
     cardRects = cards.map(c => c.getBoundingClientRect());
+    // [L-02] Fix: Add robust checks for zero-size rects (e.g. if element is hidden)
+    if (cardRects.length > 0 && cardRects[0].width === 0) {
+         // Elements likely hidden, default to 1 to avoid bad math
+         numColumns = 1;
+         return;
+    }
+
     const firstCardTop = cardRects[0].top;
 
     // Add tolerance for subpixel rendering issues (5px buffer)
@@ -339,7 +367,7 @@ function calculateGrid() {
     numColumns = firstCardOnSecondRowIndex === -1 ? cards.length : firstCardOnSecondRowIndex;
 
     // Safety fallback: numColumns must be at least 1
-    if (numColumns < 1) numColumns = 1;
+    if (numColumns < 1 || isNaN(numColumns)) numColumns = 1;
 }
 
 // Main Init Function to bind events
@@ -541,6 +569,46 @@ function init() {
 
     if (attractionsView) {
         initializeAttractions(attractionsView);
+    }
+
+    // [C-01] Fix: Handle Deep Linking
+    // Check hash on init
+    const hash = window.location.hash;
+    if (hash) {
+        if (hash === '#attractions') {
+            // Skip hero
+            heroView.classList.add('hidden');
+            attractionsView.classList.add('visible');
+             // Update history state to match
+             history.replaceState({view: 'attractions'}, '', '#attractions');
+        } else {
+             // Check if it matches an attraction ID
+             const id = hash.substring(1); // remove #
+             // Use refactored render function
+             if (renderDetailView(id)) {
+                 heroView.classList.add('hidden');
+
+                 // Setup History State
+                 history.replaceState({view: 'detail', id: id}, '', hash);
+
+                 appContainer.classList.add('detail-view-active');
+                 detailView.classList.add('visible');
+
+                 // [Deep Link Fix] Ensure Close button is visible immediately
+                 closeButton.style.opacity = '1';
+                 closeButton.style.transform = 'scale(1)';
+
+                 // [Deep Link Fix] Ensure content wrapper is visible immediately
+                 const content = detailView.querySelector('.content-wrapper');
+                 if(content) {
+                     content.style.opacity = '1';
+                     content.style.transform = 'translateY(0)';
+                 }
+
+                 // Also ensure attractions view is NOT visible
+                 attractionsView.classList.remove('visible');
+             }
+        }
     }
 }
 
