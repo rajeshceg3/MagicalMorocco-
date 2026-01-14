@@ -1,53 +1,48 @@
-# Tactical Bug Report: Operation Morocco Validation
+# Tactical Bug Report: Operation "Desert Storm"
 
-**Date:** 2024-05-22
-**Author:** Jules (Task Force QA)
-**Classification:** CLASSIFIED // INTERNAL EYES ONLY
-
-## Mission Overview
-Comprehensive vulnerability and stability assessment of the "Whispers of Morocco" web application. The objective was to identify architectural weaknesses, security flaws, and user experience disruption vectors.
+**Status**: RED
+**Author**: QA Task Force Lead
+**Date**: 2024-05-21
 
 ## Executive Summary
-The target application exhibits a generally stable visual interface but suffers from critical navigational deficiencies and security policy violations. The lack of History API integration poses a severe threat to user retention (Back Button Trap). Security posture is compromised by loose CSP headers and prohibited artifacts.
+Multiple critical vulnerabilities and operational deficiencies have been identified in the target web application. The deep linking mechanism is non-functional, causing mission failure when attempting to directly access specific intelligence (attractions). Aesthetic and accessibility standards have been compromised. Immediate remediation is required.
 
-## Vulnerability Manifest
+## Critical Findings (Priority Alpha)
 
-### 1. [CRITICAL] Back Button Disruption Vector
-*   **Description:** The application functions as a Single Page Application (SPA) but fails to utilize the Browser History API (`pushState`/`popstate`).
-*   **Impact:** Mission Critical. Users attempting to "go back" from the Detail View or Attractions View using the browser's back button are ejected from the application entirely, resulting in loss of engagement.
-*   **Reproduction:**
-    1.  Navigate to application.
-    2.  Click "Begin the Journey" (Enter Attractions View).
-    3.  Click an attraction (Enter Detail View).
-    4.  Press Browser Back Button.
-    5.  **Result:** User leaves the domain instead of closing the modal.
-*   **Remediation:** Implement `history.pushState` on view transitions and a `popstate` event listener to handle navigation state.
+### 1. Deep Linking System Failure (Critical)
+*   **Target**: `js/app.js` -> `init()`
+*   **Observation**: Direct navigation to specific states (e.g., `/#merzouga`) fails to initialize the application in the correct state. The system defaults to the "Hero" view, disregarding the URL hash.
+*   **Impact**: Users cannot bookmark or share specific content. Intelligence sharing is compromised.
+*   **Reproduction**: Reload page with `/#merzouga`. Result: Hero View shown.
+*   **Remediation**: Implement hash parsing logic within the `init()` function to trigger `handleExploreClick` and `handleAttractionClick` based on the hash value.
 
-### 2. [HIGH] Artifact Contamination (`package-lock.json`)
-*   **Description:** Detected prohibited file `package-lock.json` in the root directory.
-*   **Impact:** Operational. Violation of protocol requiring `pnpm-lock.yaml`. Potential for dependency version drift and conflicts with `pnpm` workflow.
-*   **Remediation:** Immediate neutralization (deletion) of `package-lock.json`.
+### 2. Secondary Color Protocol Violation (Medium)
+*   **Target**: `css/style.css`
+*   **Observation**: The secondary text color variable `--color-text-secondary` is set to `#5e515c`.
+*   **Standard**: Protocol dictates `#4a3b47` for optimal contrast (> 6:1).
+*   **Impact**: Suboptimal readability and non-compliance with design standards.
+*   **Remediation**: Update CSS variable to match the standard.
 
-### 3. [MEDIUM] Weak Content Security Policy (CSP)
-*   **Description:** The `Content-Security-Policy` header in `index.html` includes `style-src 'unsafe-inline'`.
-*   **Impact:** Security. Increases attack surface for Cross-Site Scripting (XSS) by allowing inline style injection.
-*   **Analysis:** Code review confirms that inline styles are set via JavaScript (`element.style.prop`), which is compatible with `style-src 'self'`. The `unsafe-inline` directive is unnecessary.
-*   **Remediation:** Remove `'unsafe-inline'` from `style-src` directive.
+### 3. Skip Link Latency (Low/UX)
+*   **Target**: `js/app.js` -> `skipLink` listener
+*   **Observation**: The "Skip to Content" link triggers an 800ms transition animation before content becomes available.
+*   **Impact**: Disorienting experience for screen reader users and keyboard navigators who expect immediate feedback.
+*   **Remediation**: Bypass transition for skip link activation or immediately focus content.
 
-### 4. [MEDIUM] Unsafe Iteration Logic
-*   **Description:** `initializeAttractions` function uses a `for...in` loop without a `hasOwnProperty` check.
-*   **Impact:** Stability. Susceptible to prototype pollution attacks or unexpected behavior if the `Object` prototype is modified.
-*   **Remediation:** Implement `Object.prototype.hasOwnProperty.call()` check or use `Object.keys()`.
+### 4. Accessibility & Focus Management (Medium)
+*   **Target**: `js/app.js`
+*   **Observation**: While focus traps exist, restoring focus after deep linking (once fixed) or back navigation needs to be robust. Specifically, `lastFocusedElement` is undefined on fresh load.
+*   **Remediation**: Ensure a sensible default focus (e.g., Close Button or Content) when `lastFocusedElement` is missing.
 
-### 5. [LOW] Accessibility Labeling Precision
-*   **Description:** The `.detail-scroll-container` has `tabindex="0"` and `aria-label` but lacks a specific `role` (e.g., `role="region"`).
-*   **Impact:** User Experience. Assistive technologies may not correctly announce the region type.
-*   **Remediation:** Add `role="region"` to the container.
+### 5. Content Security Policy (Hardening)
+*   **Target**: `index.html`
+*   **Observation**: CSP is good but can be tightened. `script-src` is `'self'`. Ensure no further inline scripts are added.
+*   **Status**: Green, but monitor.
 
-## Operational Plan
-1.  **Neutralize Artifacts:** Delete `package-lock.json`.
-2.  **Harden Security:** Tighten CSP in `index.html`.
-3.  **Patch Logic:** Refactor loop in `js/app.js` and add `role="region"`.
-4.  **Implement Navigation System:** Integrate History API in `js/app.js` to solve the Back Button Trap.
+## Remediation Log
+*   [ ] Fix Deep Linking Logic
+*   [ ] Correct Color Variables
+*   [ ] Optimize Skip Link Behavior
+*   [ ] Verify Fixes
 
-**End of Briefing.**
+**End of Report**

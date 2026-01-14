@@ -250,9 +250,17 @@ function handleCloseClick(pushToHistory = true) {
         background.style.background = initialGradient;
         attractionsView.classList.add('visible');
 
-        // Focus the last focused element when returning
+        // Focus the last focused element when returning, or fallback to the current attraction
         if (lastFocusedElement) {
             lastFocusedElement.focus();
+        } else {
+             // Fallback logic for deep links or lost focus
+             // Try to find the card that corresponds to the closed detail
+             // We don't easily have the ID here unless we store it.
+             // But we can check URL or state? URL is now #attractions.
+             // Let's just focus the first card or the container.
+             const firstCard = attractionsView.querySelector('.attraction-card[tabindex="0"]');
+             if (firstCard) firstCard.focus();
         }
 
         // Reset the transitioning flag only after the final animation
@@ -541,6 +549,41 @@ function init() {
 
     if (attractionsView) {
         initializeAttractions(attractionsView);
+    }
+
+    // Deep Linking Support
+    if (window.location.hash) {
+        const hash = window.location.hash;
+        if (hash === '#attractions') {
+            handleExploreClick(false);
+        } else if (hash.length > 1) {
+            const id = hash.slice(1);
+            if (attractionsData[id]) {
+                // First ensure we are in the attractions view context logically
+                handleExploreClick(false);
+                // Then open the detail
+                // Use a small timeout to ensure transitions or state updates flow correctly if needed,
+                // though handleExploreClick calls transitions.
+                // Since handleExploreClick starts a transition, we might need to force the state immediately
+                // or chain it.
+                // However, handleExploreClick uses onTransitionEnd.
+                // But for deep linking we want it instant or chained.
+                // Let's just call it. logic in handleAttractionClick handles state setting.
+
+                // Note: handleExploreClick sets 'attractions' visible.
+                // handleAttractionClick sets 'detail' active and hides 'attractions'.
+                // If we call them synchronously:
+                // 1. Explore -> starts transition, attractions visible.
+                // 2. Attraction -> sets detail active, starts transition.
+                // This might result in a race or weird animation.
+                // Ideally, for deep link, we skip animations or handle them gracefully.
+
+                // Better approach: Just set the state directly for the end result?
+                // But we need the DOM elements to be in correct classes.
+
+                handleAttractionClick(id, false);
+            }
+        }
     }
 }
 
