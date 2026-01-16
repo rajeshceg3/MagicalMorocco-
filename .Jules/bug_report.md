@@ -1,48 +1,53 @@
-# Tactical Bug Report: Operation "Desert Storm"
+# TACTICAL BUG ASSESSMENT REPORT
+**DATE:** 2024-05-22
+**UNIT:** QA-TF-1 (Task Force 1)
+**TARGET:** Magical Morocco Web Application
+**STATUS:** RED (Vulnerabilities Detected)
 
-**Status**: RED
-**Author**: QA Task Force Lead
-**Date**: 2024-05-21
+## EXECUTIVE SUMMARY
+Forensic analysis of the target application has revealed multiple structural and operational deficiencies. While the core visual systems are functional, the architectural integrity is compromised by state management flaws, environmental configuration errors, and non-idempotent initialization logic. Immediate remediation is required to ensure mission success.
 
-## Executive Summary
-Multiple critical vulnerabilities and operational deficiencies have been identified in the target web application. The deep linking mechanism is non-functional, causing mission failure when attempting to directly access specific intelligence (attractions). Aesthetic and accessibility standards have been compromised. Immediate remediation is required.
+---
 
-## Critical Findings (Priority Alpha)
+## FINDINGS REGISTRY
 
-### 1. Deep Linking System Failure (Critical)
-*   **Target**: `js/app.js` -> `init()`
-*   **Observation**: Direct navigation to specific states (e.g., `/#merzouga`) fails to initialize the application in the correct state. The system defaults to the "Hero" view, disregarding the URL hash.
-*   **Impact**: Users cannot bookmark or share specific content. Intelligence sharing is compromised.
-*   **Reproduction**: Reload page with `/#merzouga`. Result: Hero View shown.
-*   **Remediation**: Implement hash parsing logic within the `init()` function to trigger `handleExploreClick` and `handleAttractionClick` based on the hash value.
+### [CRITICAL] ENV-001: CI/CD Pipeline Configuration Failure
+**Description:** The test execution environment is compromised. The `jest-environment-jsdom` package is specified in `package.json` but is functionally absent or incompatible with the current `node_modules` state, preventing unit test execution.
+**Impact:** Total loss of unit verification capability. High risk of regression.
+**Reproduction:** Execute `npm test`.
+**Status:** ACTIVE
 
-### 2. Secondary Color Protocol Violation (Medium)
-*   **Target**: `css/style.css`
-*   **Observation**: The secondary text color variable `--color-text-secondary` is set to `#5e515c`.
-*   **Standard**: Protocol dictates `#4a3b47` for optimal contrast (> 6:1).
-*   **Impact**: Suboptimal readability and non-compliance with design standards.
-*   **Remediation**: Update CSS variable to match the standard.
+### [HIGH] UX-002: Navigation History Trap (The "Zombie" View)
+**Description:** Closing the 'Detail View' via the UI button pushes a new state to the History API instead of replacing or reverting. This creates a "trap" where the browser's "Back" button re-opens the view the user just closed.
+**Impact:** Severe user frustration and disorientation. Violates standard navigation expectations.
+**Reproduction:**
+1. Navigate to Attractions.
+2. Open a Detail View.
+3. Click "Close".
+4. Press Browser Back.
+**Result:** Detail View re-opens.
+**Status:** VERIFIED (via `tests/verify_history.py`)
 
-### 3. Skip Link Latency (Low/UX)
-*   **Target**: `js/app.js` -> `skipLink` listener
-*   **Observation**: The "Skip to Content" link triggers an 800ms transition animation before content becomes available.
-*   **Impact**: Disorienting experience for screen reader users and keyboard navigators who expect immediate feedback.
-*   **Remediation**: Bypass transition for skip link activation or immediately focus content.
+### [MEDIUM] ARCH-003: Non-Idempotent DOM Initialization
+**Description:** The `initializeAttractions` function blindly appends DOM elements to the container without verifying existing state or clearing the container. Multiple invocations (e.g., re-initialization) result in duplicate content.
+**Impact:** Memory leaks, broken layout, screen reader clutter (duplicate ARIA targets).
+**Reproduction:** Execute `window.init()` twice in console.
+**Status:** VERIFIED (via `tests/verify_idempotency.py`)
 
-### 4. Accessibility & Focus Management (Medium)
-*   **Target**: `js/app.js`
-*   **Observation**: While focus traps exist, restoring focus after deep linking (once fixed) or back navigation needs to be robust. Specifically, `lastFocusedElement` is undefined on fresh load.
-*   **Remediation**: Ensure a sensible default focus (e.g., Close Button or Content) when `lastFocusedElement` is missing.
+### [LOW] ACC-004: Detail View Text Contrast Vulnerability
+**Description:** The text in the Detail View relies on a gradient overlay that may not provide sufficient contrast (AAA) against all backgrounds, particularly on the top edge where the gradient is lighter.
+**Impact:** Reduced readability for visually impaired operators.
+**Mitigation:** Harden gradient opacity or enhance text shadows.
+**Status:** OBSERVATION
 
-### 5. Content Security Policy (Hardening)
-*   **Target**: `index.html`
-*   **Observation**: CSP is good but can be tightened. `script-src` is `'self'`. Ensure no further inline scripts are added.
-*   **Status**: Green, but monitor.
+---
 
-## Remediation Log
-*   [ ] Fix Deep Linking Logic
-*   [ ] Correct Color Variables
-*   [ ] Optimize Skip Link Behavior
-*   [ ] Verify Fixes
+## REMEDIATION PLAN
 
-**End of Report**
+1.  **NEUTRALIZE ENV-001:** Correct `package.json` and ensure environment integrity (Simulated fix due to restricted comms).
+2.  **RECTIFY UX-002:** Implement `history.replaceState` strategy for the Close action to maintain a linear history stack.
+3.  **HARDEN ARCH-003:** Implement container sanitation (clearing) prior to injection in `initializeAttractions`.
+4.  **ENHANCE ACC-004:** boost gradient density for maximum legibility.
+
+## SIGNATURE
+*Jules, Elite QA Validation Engineer*
