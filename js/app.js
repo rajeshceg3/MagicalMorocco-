@@ -231,15 +231,8 @@ function handleCloseClick(pushToHistory = true) {
     isTransitioning = true;
 
     if (pushToHistory) {
-         // If closing details, we go back to attractions.
-         // But we might be closing via Back button (pushToHistory=false).
-         // If closing via Button (pushToHistory=true), we should PUSH 'attractions' or BACK?
-         // Usually back. But simple SPA logic: just push new state or replace?
-         // If we arrived at #detail via #attractions, going back should be history.back()?
-         // But that might leave the domain.
-         // Let's stick to state pushing for forward navigation, or history.back() if we know we came from there.
-         // Simplest robust way: push state 'attractions'.
-         history.pushState({view: 'attractions'}, '', '#attractions');
+         // Use replaceState to avoid creating a history trap (zombie view)
+         history.replaceState({view: 'attractions'}, '', '#attractions');
     }
 
     appContainer.classList.remove('detail-view-active');
@@ -275,6 +268,9 @@ function initializeAttractions(container) {
     // Robustness: Allow container injection for testing
     const targetContainer = container || attractionsView;
     if (!targetContainer) return;
+
+    // Ensure idempotency by clearing existing content
+    targetContainer.innerHTML = '';
 
     const fragment = document.createDocumentFragment();
     let isFirstCard = true;
