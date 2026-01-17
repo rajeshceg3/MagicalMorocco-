@@ -134,7 +134,7 @@ function handleExploreClick(pushToHistory = true) {
     isTransitioning = true;
 
     if (pushToHistory) {
-        history.pushState({view: 'attractions'}, '', '#attractions');
+        history.pushState({view: 'attractions', method: 'push'}, '', '#attractions');
     }
 
     heroView.classList.add('hidden');
@@ -175,7 +175,7 @@ function handleAttractionClick(event, pushToHistory = true) {
     if (!data) return;
 
     if (pushToHistory) {
-        history.pushState({view: 'detail', id: id}, '', `#${id}`);
+        history.pushState({view: 'detail', id: id, method: 'push'}, '', `#${id}`);
     }
 
     // Populate detail view
@@ -206,33 +206,37 @@ function handleAttractionClick(event, pushToHistory = true) {
             // Abort if state changed
             if (!appContainer.classList.contains('detail-view-active')) return;
 
-            // Close button has a transition delay of 0.8s (or var(--transition-speed))
-            // We must wait for it to become interactive/visible before focusing.
-            // The CSS delay is 0.8s, matching transition speed.
-            // onTransitionEnd waits for detailView (0.8s).
-            // So we are at T=0.8s. Button starts appearing now.
-            // Let's wait for button to settle (approx 400ms transition)
-            // If reduced motion, delay is 0.
-            const delay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 400;
-            setTimeout(() => {
-                    // Check one last time before focusing
-                    if (appContainer.classList.contains('detail-view-active')) {
-                        closeButton.focus();
-                        isTransitioning = false;
-                    }
-            }, delay);
+            // At this point (T ~ 800ms), the close button transition delay (~800ms) has expired
+            // and the button is starting its fade/scale in (duration ~400ms).
+            // We use onTransitionEnd for robustness instead of setTimeout.
+            const btnDuration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 400;
+
+            onTransitionEnd(closeButton, btnDuration, () => {
+                if (appContainer.classList.contains('detail-view-active')) {
+                    closeButton.focus();
+                    isTransitioning = false;
+                }
+            });
         });
     });
 }
 
 function handleCloseClick(pushToHistory = true) {
+    // Guard: If already closed, ignore to prevent duplicate transitions (especially from popstate)
+    if (!appContainer.classList.contains('detail-view-active')) return;
+
     // Allow history navigation to override transition lock
     if (isTransitioning && pushToHistory) return;
     isTransitioning = true;
 
     if (pushToHistory) {
-         // Use replaceState to avoid creating a history trap (zombie view)
-         history.replaceState({view: 'attractions'}, '', '#attractions');
+         // Fix UX-002: Check if we pushed state to get here. If so, go back.
+         if (history.state && history.state.method === 'push') {
+             history.back();
+         } else {
+             // Fallback for deep links: Use replaceState
+             history.replaceState({view: 'attractions'}, '', '#attractions');
+         }
     }
 
     appContainer.classList.remove('detail-view-active');
