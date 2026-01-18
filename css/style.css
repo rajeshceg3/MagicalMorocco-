@@ -339,8 +339,8 @@ body {
     align-items: flex-start;
     justify-content: flex-end;
     padding: 0; /* Padding moved to content-scroll-container */
-    /* ACC-004: Increased opacity for better contrast */
-    background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.98));
+    /* ACC-004: Hardened opacity for AAA contrast compliance */
+    background: linear-gradient(rgba(0,0,0,0.95), rgba(0,0,0,0.92) 40%, rgba(0,0,0,0.92) 60%, rgba(0,0,0,0.99));
     z-index: 20;
     /* Disable scroll on the main view container, we scroll the inner container */
     overflow: hidden;
