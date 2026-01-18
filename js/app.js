@@ -5,6 +5,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, var(--theme-majorelle-bg), var(--theme-majorelle-text))",
         clipPath: "polygon(0 0, 100% 20%, 100% 100%, 0 80%)",
         image: "https://images.unsplash.com/photo-1585499831504-1f3c1fd867c3?auto=format&fit=crop&q=80&w=600",
+        altText: "Vibrant blue villa with green plants in Jardin Majorelle",
     },
     chefchaouen: {
         title: "The Blue Symphony",
@@ -12,6 +13,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, var(--theme-chefchaouen-bg), var(--theme-chefchaouen-text))",
         clipPath: "circle(50% at 50% 50%)",
         image: "https://images.unsplash.com/photo-1569383746724-6f1b882b8f46?auto=format&fit=crop&q=80&w=600",
+        altText: "Blue painted alleyway in Chefchaouen",
     },
     sahara: {
         title: "The Sea of Silence",
@@ -19,6 +21,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, var(--theme-sahara-bg), var(--theme-sahara-text))",
         clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
         image: "https://images.unsplash.com/photo-1489573280374-2e193c63726c?auto=format&fit=crop&q=80&w=600",
+        altText: "Golden sand dunes of the Sahara Desert",
     },
     aitbenhaddou: {
         title: "The Earthen Fortress",
@@ -26,6 +29,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, var(--theme-aitbenhaddou-bg), var(--theme-aitbenhaddou-text))",
         clipPath: "polygon(0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%, 100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%)",
         image: "https://images.unsplash.com/photo-1569531955316-bb271f9c4531?auto=format&fit=crop&q=80&w=600",
+        altText: "Mud-brick ksar of Ait Benhaddou",
     },
     fes: {
         title: "The Labyrinth of Time",
@@ -33,6 +37,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, #e0bfa0, #c9ada7)",
         clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
         image: "https://images.unsplash.com/photo-1538600838042-6a0c694ffab5?auto=format&fit=crop&q=80&w=600",
+        altText: "Narrow bustling alleyway in Fes medina",
     },
     essaouira: {
         title: "The Wind-Kissed Port",
@@ -40,6 +45,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, #a2d2ff, #8ecae6)",
         clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)",
         image: "https://images.unsplash.com/photo-1758441301111-221320b2dff5?auto=format&fit=crop&q=80&w=600",
+        altText: "Blue fishing boats in Essaouira harbor",
     },
     dades: {
         title: "The Crimson Canyon",
@@ -47,6 +53,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, #ffafcc, #ffc8dd)",
         clipPath: "polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%)",
         image: "https://images.unsplash.com/photo-1635320550213-e801431ad3d0?auto=format&fit=crop&q=80&w=600",
+        altText: "Winding road in Dades Gorges",
     },
     merzouga: {
         title: "The Golden Threshold",
@@ -54,6 +61,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, #ffca3a, #ffb703)",
         clipPath: "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)",
         image: "https://images.unsplash.com/photo-1719995314973-295d09dfa5a3?auto=format&fit=crop&q=80&w=600",
+        altText: "Camel caravan in Merzouga dunes",
     },
     casablanca: {
         title: "The Modern Heartbeat",
@@ -61,6 +69,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, #bde0fe, #a2d2ff)",
         clipPath: "polygon(0 0, 100% 0, 100% 85%, 0 100%)",
         image: "https://images.unsplash.com/photo-1698083087402-886bd163b97e?auto=format&fit=crop&q=80&w=600",
+        altText: "Hassan II Mosque and ocean view",
     },
     rabat: {
         title: "The Royal Calm",
@@ -68,6 +77,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, #c1fba4, #90ee90)",
         clipPath: "polygon(0 15%, 100% 0, 100% 85%, 0 100%)",
         image: "https://images.unsplash.com/photo-1760727750413-2d7075cb51d3?auto=format&fit=crop&q=80&w=600",
+        altText: "Kasbah of the Udayas in Rabat",
     },
     tangier: {
         title: "The Mythic Crossroads",
@@ -75,6 +85,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, #bde0fe, #8ecae6)",
         clipPath: "polygon(0 0, 85% 0, 100% 100%, 15% 100%)",
         image: "https://images.unsplash.com/photo-1570497700762-5b468aba1edc?auto=format&fit=crop&q=80&w=600",
+        altText: "View of Tangier cityscape and sea",
     },
     meknes: {
         title: "The Sultan's Dream",
@@ -82,6 +93,7 @@ const attractionsData = {
         gradient: "linear-gradient(145deg, #ffc8dd, #c9ada7)",
         clipPath: "polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)",
         image: "https://images.unsplash.com/photo-1731800713184-12e955a30d4a?auto=format&fit=crop&q=80&w=600",
+        altText: "Bab Mansour gate in Meknes",
     },
 };
 
@@ -294,7 +306,7 @@ function initializeAttractions(container) {
 
         const img = document.createElement('img');
         img.src = attraction.image;
-        img.alt = "";
+        img.alt = attraction.altText || "";
         img.loading = "lazy";
         // Robustness: Hide broken images
         img.onerror = function() {
