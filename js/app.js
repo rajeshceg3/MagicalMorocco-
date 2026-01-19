@@ -366,11 +366,10 @@ function calculateGrid() {
 function init() {
     // Prevent duplicate initialization
     if (appContainer && document.body.contains(appContainer)) {
-        // If appContainer is already set and in the DOM, we might be re-running.
-        // For testing, we might want to reset listeners, but simple idempotency check is hard
-        // without keeping track of listeners.
-        // Ideally, we should remove listeners before adding, but anonymous functions make that hard.
-        // For now, we'll re-query elements to handle DOM replacements in tests.
+        // FIX: SYS-002 (Init Redundancy)
+        // If appContainer is already set and in the DOM, we are re-running on the same instance.
+        // Return immediately to prevent duplicate event listeners.
+        return;
     }
 
     appContainer = document.getElementById('app-container');
@@ -449,7 +448,16 @@ function init() {
             const cards = Array.from(document.querySelectorAll('.attraction-card'));
             if (cards.length === 0) return;
 
-            let activeCardIndex = cards.findIndex(card => card.tabIndex === 0);
+            // FIX: UX-001 (Focus Sync)
+            // Determine active card from document.activeElement to ensure we respect
+            // focus changes from mouse clicks, rather than relying solely on stale tabIndex.
+            let activeCardIndex = cards.indexOf(document.activeElement);
+
+            if (activeCardIndex === -1) {
+                // Fallback to the card with tabIndex=0 if focus is lost or elsewhere
+                activeCardIndex = cards.findIndex(card => card.tabIndex === 0);
+            }
+
             if (activeCardIndex === -1) {
                 // If no card is active, make the first one active
                 activeCardIndex = 0;
