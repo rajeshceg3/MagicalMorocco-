@@ -103,7 +103,21 @@ let appContainer, background, heroView, attractionsView, detailView, exploreButt
 // State Machine
 let isTransitioning = false;
 let lastFocusedElement;
+let currentDetailId = null; // Track the current detail ID for robust focus restoration
 const initialGradient = "linear-gradient(145deg, var(--color-bg-main), var(--color-accent))";
+
+// Utility: Debounce function for performance
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
 function getTransitionDuration() {
     if (typeof window === 'undefined') return 800; // Default for testing without window
@@ -181,10 +195,15 @@ function handleAttractionClick(event, pushToHistory = true) {
         id = event.currentTarget.dataset.id;
     }
 
+    // Security: Prototype Pollution Check
+    if (!Object.prototype.hasOwnProperty.call(attractionsData, id)) return;
+
     const data = attractionsData[id];
 
     // Guard clause for robustness
     if (!data) return;
+
+    currentDetailId = id; // Track the current ID
 
     if (pushToHistory) {
         history.pushState({view: 'detail', id: id, method: 'push'}, '', `#${id}`);
@@ -264,12 +283,26 @@ function handleCloseClick(pushToHistory = true) {
             lastFocusedElement.focus();
         } else {
              // Fallback logic for deep links or lost focus
-             // Try to find the card that corresponds to the closed detail
-             // We don't easily have the ID here unless we store it.
-             // But we can check URL or state? URL is now #attractions.
-             // Let's just focus the first card or the container.
-             const firstCard = attractionsView.querySelector('.attraction-card[tabindex="0"]');
-             if (firstCard) firstCard.focus();
+             // Restore focus to the specific card we just closed, if possible
+             if (currentDetailId) {
+                 const cardToFocus = attractionsView.querySelector(`.attraction-card[data-id="${currentDetailId}"]`);
+                 if (cardToFocus) {
+                     // Ensure Roving Tabindex state is correct
+                     const cards = Array.from(attractionsView.querySelectorAll('.attraction-card'));
+                     cards.forEach(c => c.tabIndex = -1);
+                     cardToFocus.tabIndex = 0;
+                     cardToFocus.focus();
+                 } else {
+                    const firstCard = attractionsView.querySelector('.attraction-card');
+                    if (firstCard) {
+                        firstCard.tabIndex = 0;
+                        firstCard.focus();
+                    }
+                 }
+             } else {
+                 const firstCard = attractionsView.querySelector('.attraction-card[tabindex="0"]');
+                 if (firstCard) firstCard.focus();
+             }
         }
 
         // Reset the transitioning flag only after the final animation
@@ -308,6 +341,8 @@ function initializeAttractions(container) {
         img.src = attraction.image;
         img.alt = attraction.altText || "";
         img.loading = "lazy";
+        // Accessibility: Hide redundant image from screen readers as parent button has label
+        img.setAttribute('aria-hidden', 'true');
         // Robustness: Hide broken images
         img.onerror = function() {
             this.style.display = 'none';
@@ -517,11 +552,12 @@ function init() {
     }
 
     // Recalculate grid on window resize
-    window.addEventListener('resize', () => {
-            // Invalidate cache and immediately recalculate if we are in attractions view
-            // to prevent weird navigation behavior before next keypress
-            calculateGrid();
-    });
+    // Performance: Debounce the resize handler to prevent layout thrashing
+    window.addEventListener('resize', debounce(() => {
+        // Invalidate cache and immediately recalculate if we are in attractions view
+        // to prevent weird navigation behavior before next keypress
+        calculateGrid();
+    }, 100));
 
     // History API Handler
     window.addEventListener('popstate', (event) => {
@@ -578,7 +614,9 @@ function init() {
             handleExploreClick(false);
         } else if (hash.length > 1) {
             const id = hash.slice(1);
-            if (attractionsData[id]) {
+            // Security: Prototype Pollution Check
+            if (Object.prototype.hasOwnProperty.call(attractionsData, id)) {
+                currentDetailId = id; // Track for correct focus restoration on close
                 // First ensure we are in the attractions view context logically
                 handleExploreClick(false);
                 // Then open the detail

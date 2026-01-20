@@ -188,8 +188,8 @@ body {
     background: var(--color-accent-dark);
     transform: scale(1.05) translateY(-3px);
     box-shadow: 0 5px 25px rgba(0,0,0,0.2);
-    outline: 2px solid transparent;
-    outline-offset: 2px;
+    outline: 3px solid var(--color-text-primary);
+    outline-offset: 4px;
 }
 
 @media (hover: hover) {
@@ -441,8 +441,8 @@ body {
 .close-button:focus-visible {
     transform: scale(1.1) rotate(90deg);
     background: rgba(255,255,255,0.2);
-    outline: 2px solid transparent;
-    outline-offset: 2px;
+    outline: 3px solid var(--color-text-on-dark);
+    outline-offset: 4px;
 }
 
 @media (hover: hover) {
