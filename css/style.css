@@ -268,7 +268,8 @@ body {
 .attraction-card .shape {
     width: clamp(150px, 40vw, 200px);
     height: clamp(225px, 60vw, 300px);
-    background: rgba(255, 255, 255, 0.5);
+    /* FIX: BUG-003 Increased opacity for better contrast */
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
@@ -312,7 +313,8 @@ body {
     font-size: 1.8rem;
     font-weight: 900;
     color: var(--color-text-primary);
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    /* FIX: BUG-003 Enhanced text shadow for legibility */
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3), 0 0 20px rgba(255,255,255,0.8);
     text-align: center;
     transition: all 0.4s var(--transition-ease);
     letter-spacing: 0.1em;
@@ -328,6 +330,23 @@ body {
     .attraction-card:hover h2 {
         transform: scale(1.1);
     }
+}
+
+/* FIX: BUG-004 Fallback Icon Styles */
+.fallback-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-text-primary);
+    opacity: 0.5;
+    z-index: 0; /* Behind image if it loads (though img has z-index auto) */
+}
+
+.fallback-icon svg {
+    width: 30%; /* Responsive size */
+    height: auto;
 }
 
 /* --- Detail View (The Full Immersion) --- */
