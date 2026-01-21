@@ -4,8 +4,8 @@ const attractionsData = {
         description: "Step into a world painted in cobalt. The Jardin Majorelle isn't just a garden; it's a living canvas where the electric blue of the villa sings against the deep greens of cacti and bamboo. You're not just observing; you're breathing in color, feeling the calm settle as you frame the perfect shot of a sun-drenched leaf against a blue wall.",
         gradient: "linear-gradient(145deg, var(--theme-majorelle-bg), var(--theme-majorelle-text))",
         clipPath: "polygon(0 0, 100% 20%, 100% 100%, 0 80%)",
-        image: "https://images.unsplash.com/photo-1585499831504-1f3c1fd867c3?auto=format&fit=crop&q=80&w=600",
-        altText: "Vibrant blue villa with green plants in Jardin Majorelle",
+        image: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&q=80&w=600",
+        altText: "Intricate Moroccan mosaic fountain and arches",
     },
     chefchaouen: {
         title: "The Blue Symphony",
@@ -343,12 +343,23 @@ function initializeAttractions(container) {
         img.loading = "lazy";
         // Accessibility: Hide redundant image from screen readers as parent button has label
         img.setAttribute('aria-hidden', 'true');
-        // Robustness: Hide broken images
+
+        // FIX: BUG-004 Fallback for broken images
+        const fallback = document.createElement('div');
+        fallback.className = 'fallback-icon';
+        fallback.setAttribute('aria-hidden', 'true');
+        // Simple landscape icon
+        fallback.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+        fallback.style.display = 'none';
+
+        // Robustness: Hide broken images and show fallback
         img.onerror = function() {
             this.style.display = 'none';
+            fallback.style.display = 'flex';
         };
 
         shapeDiv.appendChild(img);
+        shapeDiv.appendChild(fallback);
 
         const h2 = document.createElement('h2');
         h2.setAttribute('aria-hidden', 'true');
@@ -399,15 +410,16 @@ function calculateGrid() {
 
 // Main Init Function to bind events
 function init() {
-    // Prevent duplicate initialization
-    if (appContainer && document.body.contains(appContainer)) {
-        // FIX: SYS-002 (Init Redundancy)
-        // If appContainer is already set and in the DOM, we are re-running on the same instance.
-        // Return immediately to prevent duplicate event listeners.
+    const container = document.getElementById('app-container');
+    if (!container) return;
+
+    // FIX: BUG-005 Use data attribute for robust idempotency
+    if (container.dataset.initialized === 'true') {
         return;
     }
+    container.dataset.initialized = 'true';
 
-    appContainer = document.getElementById('app-container');
+    appContainer = container;
     background = document.getElementById('background');
     heroView = document.getElementById('hero-view');
     attractionsView = document.getElementById('attractions-view');
@@ -501,10 +513,9 @@ function init() {
 
             e.preventDefault();
 
-            // Recalculate grid on first navigation attempt in case of resize
-            if (numColumns === 0) {
-                calculateGrid();
-            }
+            // FIX: BUG-002 Force calculation to ensure sync with current layout
+            // This prevents race conditions where resize debounce hasn't fired yet
+            calculateGrid();
 
             let nextIndex = activeCardIndex;
 
