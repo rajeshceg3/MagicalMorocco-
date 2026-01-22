@@ -160,7 +160,12 @@ function handleExploreClick(pushToHistory = true) {
     isTransitioning = true;
 
     if (pushToHistory) {
-        history.pushState({view: 'attractions', method: 'push'}, '', '#attractions');
+        // SEC-001: Safety wrapper for History API
+        try {
+            history.pushState({view: 'attractions', method: 'push'}, '', '#attractions');
+        } catch (e) {
+            console.warn('History API failed:', e);
+        }
     }
 
     heroView.classList.add('hidden');
@@ -170,6 +175,9 @@ function handleExploreClick(pushToHistory = true) {
     onTransitionEnd(attractionsView, getTransitionDuration(), () => {
         // Abort if state changed (e.g. back to hero)
         if (heroView.classList.contains('hidden') === false) return;
+
+        // UX-001: Abort if we have moved to detail view (Race Condition Fix)
+        if (appContainer.classList.contains('detail-view-active')) return;
 
         isTransitioning = false;
         // Focus the first attraction card to enable immediate keyboard navigation
@@ -181,8 +189,9 @@ function handleExploreClick(pushToHistory = true) {
 }
 
 function handleAttractionClick(event, pushToHistory = true) {
-    // Allow history navigation to override transition lock
-    if (isTransitioning && pushToHistory) return;
+    // UX-001: Allow rapid interaction. We do NOT block if transitioning (e.g. from Explore).
+    // We rely on the UI state logic below to handle transitions correctly.
+
     isTransitioning = true;
     lastFocusedElement = document.activeElement;
 
@@ -206,7 +215,12 @@ function handleAttractionClick(event, pushToHistory = true) {
     currentDetailId = id; // Track the current ID
 
     if (pushToHistory) {
-        history.pushState({view: 'detail', id: id, method: 'push'}, '', `#${id}`);
+        // SEC-001: Safety wrapper for History API
+        try {
+            history.pushState({view: 'detail', id: id, method: 'push'}, '', `#${id}`);
+        } catch (e) {
+            console.warn('History API failed:', e);
+        }
     }
 
     // Populate detail view
@@ -266,7 +280,12 @@ function handleCloseClick(pushToHistory = true) {
              history.back();
          } else {
              // Fallback for deep links: Use replaceState
-             history.replaceState({view: 'attractions'}, '', '#attractions');
+             // SEC-001: Safety wrapper
+             try {
+                history.replaceState({view: 'attractions'}, '', '#attractions');
+             } catch (e) {
+                 console.warn('History API failed:', e);
+             }
          }
     }
 
@@ -391,10 +410,19 @@ function getFocusableElements(element) {
 
 let numColumns = 0; // Cached value
 let cardRects = []; // Cached card dimensions
+let lastWindowWidth = 0; // PERF-001: Cache last width
 
-function calculateGrid() {
+function calculateGrid(force = false) {
     const cards = Array.from(document.querySelectorAll('.attraction-card'));
     if (cards.length === 0) return;
+
+    // PERF-001: Optimize to prevent layout thrashing
+    // Only recalculate if width changed or forced
+    if (typeof window !== 'undefined') {
+        const currentWidth = window.innerWidth;
+        if (!force && currentWidth === lastWindowWidth && numColumns > 0) return;
+        lastWindowWidth = currentWidth;
+    }
 
     cardRects = cards.map(c => c.getBoundingClientRect());
     const firstCardTop = cardRects[0].top;
@@ -449,6 +477,18 @@ function init() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && detailView && detailView.classList.contains('visible')) {
             handleCloseClick();
+        }
+    });
+
+    // ACC-001: Robust global focus trap for detail view
+    // This catches focus escaping via non-keyboard means or missed Tab handlers
+    document.addEventListener('focusin', (e) => {
+        if (detailView && detailView.classList.contains('visible')) {
+             if (!detailView.contains(e.target)) {
+                 e.preventDefault();
+                 // Redirect focus back to the close button
+                 if (closeButton) closeButton.focus();
+             }
         }
     });
 
@@ -513,9 +553,10 @@ function init() {
 
             e.preventDefault();
 
-            // FIX: BUG-002 Force calculation to ensure sync with current layout
-            // This prevents race conditions where resize debounce hasn't fired yet
-            calculateGrid();
+            // PERF-001: Use cached calculation.
+            // We only force if we suspect layout might have changed without resize (rare)
+            // But checking lastWindowWidth inside calculateGrid handles it.
+            calculateGrid(false);
 
             let nextIndex = activeCardIndex;
 
@@ -567,7 +608,8 @@ function init() {
     window.addEventListener('resize', debounce(() => {
         // Invalidate cache and immediately recalculate if we are in attractions view
         // to prevent weird navigation behavior before next keypress
-        calculateGrid();
+        // PERF-001: Force recalculation on resize
+        calculateGrid(true);
     }, 100));
 
     // History API Handler
