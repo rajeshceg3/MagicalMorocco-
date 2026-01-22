@@ -22,7 +22,10 @@ def main():
     tests = [
         "tests/verify_accessibility.py",
         "tests/verify_history_trap.py",
-        "tests/verify_focus.py"
+        "tests/verify_focus.py",
+        "tests/verify_ux_rapid_interaction.py",
+        "tests/verify_acc_focus_trap.py",
+        "tests/verify_logic_deep_link.py"
     ]
 
     failed = []
