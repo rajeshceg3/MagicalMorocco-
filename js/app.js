@@ -119,6 +119,24 @@ function debounce(func, wait) {
     };
 }
 
+// ARCH-001: Helper to toggle inert state for isolation
+function toggleInert(active) {
+    const elements = [
+        heroView,
+        attractionsView,
+        skipLink,
+        exploreButton
+    ];
+    elements.forEach(el => {
+        if (!el) return;
+        if (active) {
+            el.setAttribute('inert', '');
+        } else {
+            el.removeAttribute('inert');
+        }
+    });
+}
+
 function getTransitionDuration() {
     if (typeof window === 'undefined') return 800; // Default for testing without window
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 800;
@@ -239,6 +257,9 @@ function handleAttractionClick(event, pushToHistory = true) {
     appContainer.classList.add('detail-view-active');
     attractionsView.classList.remove('visible');
 
+    // ARCH-001: Isolate state
+    toggleInert(true);
+
     // Wait for attractions view to fade out before showing the detail view
     onTransitionEnd(attractionsView, getTransitionDuration(), () => {
         // Abort if state changed (e.g. detail closed)
@@ -292,9 +313,14 @@ function handleCloseClick(pushToHistory = true) {
     appContainer.classList.remove('detail-view-active');
     detailView.classList.remove('visible');
 
+    // VIS-001: Restore background immediately for natural transition
+    background.style.background = initialGradient;
+
+    // ARCH-001: Remove isolation
+    toggleInert(false);
+
     // Listen for the detail view to fully transition out
     onTransitionEnd(detailView, getTransitionDuration(), () => {
-        background.style.background = initialGradient;
         attractionsView.classList.add('visible');
 
         // Focus the last focused element when returning, or fallback to the current attraction
@@ -581,8 +607,8 @@ function init() {
                     if (activeCardIndex + numColumns < cards.length) {
                         nextIndex = activeCardIndex + numColumns;
                     } else {
-                        // If moving down would go past the end, go to the last item
-                        nextIndex = cards.length - 1;
+                        // FIX: UX-002 Do not jump to end if no item below
+                        nextIndex = activeCardIndex;
                     }
                     break;
                 case 'ArrowUp':
