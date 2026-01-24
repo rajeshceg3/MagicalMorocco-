@@ -256,7 +256,8 @@ body {
     }
 }
 
-#attractions-view.visible {
+#attractions-view.visible,
+#attractions-view:target {
     visibility: visible;
     opacity: 1;
     transform: translateY(0);
@@ -363,6 +364,17 @@ body {
     }
 }
 
+/* ACC-002: High Contrast Mode Support */
+@media (forced-colors: active) {
+    .attraction-card:focus {
+        outline: 3px solid CanvasText;
+        outline-offset: 4px;
+    }
+    .close-button:focus-visible {
+        outline: 3px solid ButtonText;
+    }
+}
+
 /* FIX: BUG-004 Fallback Icon Styles */
 .fallback-icon {
     position: absolute;
@@ -416,7 +428,12 @@ body {
     flex-direction: column;
     justify-content: flex-end; /* Align content to bottom initially */
     align-items: flex-start;
-    outline: none; /* Focusable but no outline */
+    outline: none;
+}
+
+.detail-scroll-container:focus-visible {
+    outline: 2px solid var(--color-text-on-dark);
+    outline-offset: -2px;
 }
 
 /* Ensure content starts at top on small screens/long content */

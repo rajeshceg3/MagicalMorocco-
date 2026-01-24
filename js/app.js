@@ -173,9 +173,29 @@ function onTransitionEnd(element, duration, callback) {
 }
 
 
-function handleExploreClick(pushToHistory = true) {
+function handleExploreClick(arg1, arg2) {
+    let pushToHistory = true;
+    let immediate = false;
+
+    if (arg1 && arg1.preventDefault) {
+        arg1.preventDefault();
+        pushToHistory = true;
+    } else if (typeof arg1 === 'boolean') {
+        pushToHistory = arg1;
+        if (typeof arg2 === 'boolean') immediate = arg2;
+    } else if (arg1 === undefined && typeof arg2 === 'boolean') {
+         // Handle case: handleExploreClick(undefined, true)
+         immediate = arg2;
+    }
+
     if (isTransitioning) return;
     isTransitioning = true;
+
+    // UX: Immediate transition for skip link
+    if (immediate) {
+        heroView.style.transition = 'none';
+        attractionsView.style.transition = 'none';
+    }
 
     if (pushToHistory) {
         // SEC-001: Safety wrapper for History API
@@ -189,8 +209,15 @@ function handleExploreClick(pushToHistory = true) {
     heroView.classList.add('hidden');
     attractionsView.classList.add('visible');
 
+    const duration = immediate ? 0 : getTransitionDuration();
+
     // Wait for the transition to end on the attractions view
-    onTransitionEnd(attractionsView, getTransitionDuration(), () => {
+    onTransitionEnd(attractionsView, duration, () => {
+        if (immediate) {
+            heroView.style.transition = '';
+            attractionsView.style.transition = '';
+        }
+
         // Abort if state changed (e.g. back to hero)
         if (heroView.classList.contains('hidden') === false) return;
 
@@ -495,7 +522,7 @@ function init() {
     if (skipLink) {
         skipLink.addEventListener('click', (e) => {
             e.preventDefault();
-            handleExploreClick();
+            handleExploreClick(undefined, true);
         });
     }
 
