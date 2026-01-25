@@ -426,6 +426,7 @@ function initializeAttractions(container) {
 
         // Robustness: Hide broken images and show fallback
         img.onerror = function() {
+            console.warn(`Failed to load image for ${id}: ${attraction.image}`);
             this.style.display = 'none';
             fallback.style.display = 'flex';
         };

@@ -383,7 +383,7 @@ body {
     justify-content: center;
     align-items: center;
     color: var(--color-text-primary);
-    opacity: 0.5;
+    opacity: 0.8;
     z-index: 0; /* Behind image if it loads (though img has z-index auto) */
 }
 
@@ -483,11 +483,11 @@ body {
     right: 2rem;
     width: 50px;
     height: 50px;
-    background: rgba(0,0,0,0.2); /* Darker for better contrast on light backgrounds */
+    background: rgba(0,0,0,0.5); /* Darker for better contrast on light backgrounds */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 1px solid rgba(255,255,255,0.6);
     cursor: pointer;
     display: flex;
     justify-content: center;
