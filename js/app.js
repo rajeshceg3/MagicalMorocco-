@@ -230,15 +230,19 @@ function handleExploreClick(arg1, arg2) {
         if (firstCard) {
             firstCard.focus();
         }
+
+        if (exploreButton) exploreButton.setAttribute('aria-expanded', 'true');
     });
 }
 
-function handleAttractionClick(event, pushToHistory = true) {
+function handleAttractionClick(event, pushToHistory = true, immediate = false) {
     // UX-001: Allow rapid interaction. We do NOT block if transitioning (e.g. from Explore).
     // We rely on the UI state logic below to handle transitions correctly.
 
     isTransitioning = true;
     lastFocusedElement = document.activeElement;
+    // Fix: If triggered programmatically or via deep link on load, activeElement is body.
+    if (lastFocusedElement === document.body) lastFocusedElement = null;
 
     // Use currentTarget to ensure we get the button, even if an inner element is clicked
     // Or if called programmatically, handle differently
@@ -287,25 +291,38 @@ function handleAttractionClick(event, pushToHistory = true) {
     // ARCH-001: Isolate state
     toggleInert(true);
 
+    if (immediate) {
+        attractionsView.style.transition = 'none';
+        detailView.style.transition = 'none';
+        closeButton.style.transition = 'none';
+    }
+
+    const duration = immediate ? 0 : getTransitionDuration();
+
     // Wait for attractions view to fade out before showing the detail view
-    onTransitionEnd(attractionsView, getTransitionDuration(), () => {
+    onTransitionEnd(attractionsView, duration, () => {
         // Abort if state changed (e.g. detail closed)
         if (!appContainer.classList.contains('detail-view-active')) return;
 
         detailView.classList.add('visible');
 
         // Wait for the detail view to finish its main transition
-        onTransitionEnd(detailView, getTransitionDuration(), () => {
+        onTransitionEnd(detailView, duration, () => {
             // Abort if state changed
             if (!appContainer.classList.contains('detail-view-active')) return;
 
             // At this point (T ~ 800ms), the close button transition delay (~800ms) has expired
             // and the button is starting its fade/scale in (duration ~400ms).
             // We use onTransitionEnd for robustness instead of setTimeout.
-            const btnDuration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 400;
+            const btnDuration = (immediate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 0 : 400;
 
             onTransitionEnd(closeButton, btnDuration, () => {
                 if (appContainer.classList.contains('detail-view-active')) {
+                    if (immediate) {
+                        attractionsView.style.transition = '';
+                        detailView.style.transition = '';
+                        closeButton.style.transition = '';
+                    }
                     closeButton.focus();
                     isTransitioning = false;
                 }
@@ -349,6 +366,8 @@ function handleCloseClick(pushToHistory = true) {
     // Listen for the detail view to fully transition out
     onTransitionEnd(detailView, getTransitionDuration(), () => {
         attractionsView.classList.add('visible');
+
+        if (exploreButton) exploreButton.setAttribute('aria-expanded', 'false');
 
         // Focus the last focused element when returning, or fallback to the current attraction
         if (lastFocusedElement) {
@@ -725,7 +744,7 @@ function init() {
             if (Object.prototype.hasOwnProperty.call(attractionsData, id)) {
                 currentDetailId = id; // Track for correct focus restoration on close
                 // First ensure we are in the attractions view context logically
-                handleExploreClick(false);
+                handleExploreClick(false, true);
                 // Then open the detail
                 // Use a small timeout to ensure transitions or state updates flow correctly if needed,
                 // though handleExploreClick calls transitions.
@@ -746,7 +765,7 @@ function init() {
                 // Better approach: Just set the state directly for the end result?
                 // But we need the DOM elements to be in correct classes.
 
-                handleAttractionClick(id, false);
+                handleAttractionClick(id, false, true);
             }
         }
     }
