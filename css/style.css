@@ -135,6 +135,7 @@ body {
     transition: transform var(--transition-speed) var(--transition-ease),
                 opacity var(--transition-speed) var(--transition-ease),
                 visibility 0s linear 0s;
+    overflow: hidden; /* Fix: Ensure no scrollbars on homepage */
 }
 
 #hero-view.hidden {
@@ -149,7 +150,7 @@ body {
 
 #hero-view h1 {
     font-family: 'Bodoni Moda', serif;
-    font-size: clamp(3rem, 15vw, 10rem);
+    font-size: clamp(3rem, 15vmin, 10rem); /* Fix: Use vmin to scale correctly on landscape mobile */
     font-weight: 900;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -159,7 +160,7 @@ body {
 }
 
 #hero-view p {
-    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    font-size: clamp(1rem, 2.5vmin, 1.5rem); /* Fix: Use vmin for consistency */
     letter-spacing: 0.25em;
     text-transform: uppercase;
     margin-top: 1.5rem;

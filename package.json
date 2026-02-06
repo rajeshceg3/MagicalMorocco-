@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "description": "A cinematic journey through the light and colors of Morocco.",
   "scripts": {
-    "test": "python3 tests/verify_suite.py"
+    "test": "pip3 install -r requirements.txt && playwright install chromium && python3 tests/verify_suite.py"
   },
   "devDependencies": {},
   "packageManager": "pnpm@8.0.0"
