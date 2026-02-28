@@ -98,7 +98,7 @@ const attractionsData = {
 };
 
 // --- Architected State Management and Event Handling ---
-let appContainer, background, heroView, attractionsView, detailView, exploreButton, attractionCards, closeButton, detailTitle, detailDescription, skipLink;
+let appContainer, background, heroView, attractionsView, detailView, exploreButton, closeButton, detailTitle, detailDescription, skipLink;
 
 // State Machine
 let isTransitioning = false;
@@ -379,7 +379,7 @@ function handleCloseClick(pushToHistory = true) {
                  const cardToFocus = attractionsView.querySelector(`.attraction-card[data-id="${currentDetailId}"]`);
                  if (cardToFocus) {
                      // Ensure Roving Tabindex state is correct
-                     const cards = Array.from(attractionsView.querySelectorAll('.attraction-card'));
+                     const cards = attractionCards || [];
                      cards.forEach(c => c.tabIndex = -1);
                      cardToFocus.tabIndex = 0;
                      cardToFocus.focus();
@@ -414,6 +414,8 @@ function initializeAttractions(container) {
 
     const fragment = document.createDocumentFragment();
     let isFirstCard = true;
+    let cardCount = 0;
+    attractionCards = []; // Initialize cache
     for (const id in attractionsData) {
         if (!Object.prototype.hasOwnProperty.call(attractionsData, id)) continue;
         const attraction = attractionsData[id];
@@ -431,7 +433,13 @@ function initializeAttractions(container) {
         const img = document.createElement('img');
         img.src = attraction.image;
         img.alt = attraction.altText || "";
-        img.loading = "lazy";
+        if (cardCount < 6) {
+            img.loading = "eager";
+            img.fetchPriority = "high";
+        } else {
+            img.loading = "lazy";
+        }
+        img.decoding = "async";
         // Accessibility: Hide redundant image from screen readers as parent button has label
         img.setAttribute('aria-hidden', 'true');
 
@@ -469,6 +477,8 @@ function initializeAttractions(container) {
 
         card.addEventListener('click', handleAttractionClick);
         fragment.appendChild(card);
+        attractionCards.push(card);
+        cardCount++;
     }
     targetContainer.appendChild(fragment);
 }
@@ -481,12 +491,13 @@ function getFocusableElements(element) {
     )).filter(el => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
 }
 
+let attractionCards = []; // Cached DOM elements
 let numColumns = 0; // Cached value
 let cardRects = []; // Cached card dimensions
 let lastWindowWidth = 0; // PERF-001: Cache last width
 
 function calculateGrid(force = false) {
-    const cards = Array.from(document.querySelectorAll('.attraction-card'));
+    const cards = attractionCards || [];
     if (cards.length === 0) return;
 
     // PERF-001: Optimize to prevent layout thrashing
@@ -605,7 +616,7 @@ function init() {
                 return;
             }
 
-            const cards = Array.from(document.querySelectorAll('.attraction-card'));
+            const cards = attractionCards || [];
             if (cards.length === 0) return;
 
             // FIX: UX-001 (Focus Sync)
